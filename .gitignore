@@ -9,6 +9,13 @@ token.json
 # OS
 .DS_Store
 
+# Astro build output
+dist/
+.astro/
+
+# Node dependencies
+node_modules/
+
 # Python
 __pycache__/
 *.pyc

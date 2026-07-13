@@ -1,0 +1,41 @@
+---
+import { getEntry, render } from 'astro:content';
+import 'katex/dist/katex.min.css';
+
+const entry = await getEntry('teoria', 'fisica');
+if (!entry) throw new Error('Missing teoria/fisica content entry');
+const { Content } = await render(entry);
+---
+
+<html lang="ca">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{entry.data.title} — PBAU Prep</title>
+	</head>
+	<body>
+		<main>
+			<Content />
+		</main>
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 1.5rem;
+		font-family: system-ui, sans-serif;
+		line-height: 1.6;
+	}
+
+	main :global(.katex-display) {
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+
+	main :global(img),
+	main :global(table) {
+		max-width: 100%;
+	}
+</style>
