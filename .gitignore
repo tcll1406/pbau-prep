@@ -1,0 +1,16 @@
+# Secrets & credentials
+.env
+credentials.json
+token.json
+
+# Disposable intermediates
+.tmp/
+
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
