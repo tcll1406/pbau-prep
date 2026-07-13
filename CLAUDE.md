@@ -185,6 +185,7 @@ All content exists and is clean. Do not generate placeholder content; ask me for
   - Theory content lives in an Astro content collection at `src/content/teoria/` (config: `src/content.config.ts`), one Markdown file per subject (`fisica.md` so far). Mobile overflow handling for long formulas is scoped CSS on `.katex-display` (`overflow-x: auto`) in the page component.
   - Theory pages are one static route per subject under `src/pages/teoria/` (e.g. `fisica.astro`), not a dynamic `[subject]` route — kept simple since only one subject exists so far; revisit if this duplicates once Mat II and MACS theory pages are added.
   - Source content files (theory Markdown, quiz JSON/Markdown, exam PDFs) live in `PBAUPrepFiles/` at the repo root — **not** committed to git yet and not yet wired into the app beyond copying the Física theory file into the content collection. Exam PDFs will need to move into `public/` (or be fetched from storage) when Stage 2 (exam archive) is built.
+  - Netlify site `pbau-prep` (https://pbau-prep.netlify.app) created via Netlify CLI and deployed manually (`netlify deploy --prod --dir=dist`) for a live URL. It is **not yet connected to the GitHub repo** for continuous deployment — linking a repo requires an interactive GitHub OAuth authorization (`netlify init`) that can't run headlessly; do this once from the Netlify dashboard (Site settings → Build & deploy → Link repository → `tcll1406/pbau-prep`, build command `npm run build`, publish directory `dist`) or by running `netlify init` yourself in an interactive terminal.
 
 ---
 
