@@ -1,40 +1,133 @@
 ---
 import Base from '../layouts/Base.astro';
+import { ICONS } from '../data/icons';
+
+const STEPS = [
+	{
+		icon: ICONS.book,
+		title: 'Tria la teva assignatura',
+		desc: 'Accedeix als materials de Física, Matemàtiques II o MACS II',
+	},
+	{
+		icon: ICONS.document,
+		title: 'Estudia la teoria',
+		desc: 'Llegeix els resums amb fórmules fonamentals',
+	},
+	{
+		icon: ICONS.quiz,
+		title: "Autoavalua't",
+		desc: 'Fes tests amb correcció instantània i explicacions detallades',
+	},
+	{
+		icon: ICONS.calculator,
+		title: 'Calcula la teva nota',
+		desc: "Simula la teva nota d'accés i cerca carreres a l'abast",
+	},
+];
 ---
 
 <Base title="PBAU Prep">
-	<main>
-		<h1>PBAU Prep</h1>
-		<p class="mission">
-			Prepara la PBAU a les Illes Balears i aconsegueix la nota màxima.
-		</p>
-
-		<div class="cta">
-			<a class="btn btn-primary" href="/learning">Learning Hub</a>
-			<a class="btn btn-secondary" href="/career">Career Hub</a>
+	<section class="hero">
+		<div class="container">
+			<h1>Consegueix la teva millor nota a la PBAU</h1>
+			<p class="subtitle">
+				La plataforma dedicada exclusivament als estudiants de 2n de Batxillerat de les Illes
+				Balears. Prepara't amb materials especialitzats, exàmens reals i eines de càlcul per
+				accedir a la universitat que vols.
+			</p>
+			<div class="cta">
+				<a class="btn btn-primary" href="/learning">Comença a estudiar</a>
+				<a class="btn btn-secondary" href="/career">Explora carreres</a>
+			</div>
 		</div>
-	</main>
+	</section>
+
+	<section class="light">
+		<div class="container">
+			<h2 class="section-title">La nostra missió</h2>
+			<p class="mission">
+				Ajudar els estudiants de balears a assolir les notes més altes a les Proves d'Accés a la
+				Universitat, oferint recursos educatius de qualitat, exàmens oficials i eines pràctiques
+				dissenyades específicament per al currículum de la UIB.
+			</p>
+
+			<h2 class="section-title">Tot el que necessites per triomfar</h2>
+			<p class="section-subtitle">Eines potents dissenyades per al teu èxit acadèmic</p>
+
+			<div class="cards">
+				<a class="card" href="/career">
+					<span class="card-icon" set:html={ICONS.compass} />
+					<span class="card-title">Career Hub</span>
+					<span class="card-desc">Calculadora de nota d'accés i cerca de carreres amb notes de tall</span>
+				</a>
+				<a class="card" href="/learning">
+					<span class="card-icon" set:html={ICONS.book} />
+					<span class="card-title">Learning Hub</span>
+					<span class="card-desc">Teoria, tests i exàmens per Física, Matemàtiques II i MACS II</span>
+				</a>
+				<a class="card" href="/about#tips">
+					<span class="card-icon" set:html={ICONS.lightbulb} />
+					<span class="card-title">Tips per triomfar</span>
+					<span class="card-desc">Consells d'un antic estudiant de Batxillerat</span>
+				</a>
+			</div>
+
+			<h2 class="section-title">Com funciona</h2>
+
+			<div class="steps">
+				{STEPS.map((step, i) => (
+					<div class="step">
+						<div class="step-top">
+							<span class="step-number">{i + 1}</span>
+							<span class="step-icon" set:html={step.icon} />
+						</div>
+						<span class="step-title">{step.title}</span>
+						<span class="step-desc">{step.desc}</span>
+					</div>
+				))}
+			</div>
+
+			<div class="start-cta">
+				<a class="btn btn-primary" href="/learning">Comença ara</a>
+			</div>
+		</div>
+	</section>
+
+	<footer>
+		<div class="container footer-inner">
+			<span class="brand">PBAU Prep</span>
+			<span class="copyright">© 2026 PBAU Prep. Tots els drets reservats.</span>
+		</div>
+	</footer>
 </Base>
 
 <style>
-	main {
-		max-width: 42rem;
+	.container {
+		max-width: 72rem;
 		margin: 0 auto;
-		padding: 5rem 1.5rem;
-		line-height: 1.6;
+		padding: 0 1.5rem;
+	}
+
+	.hero {
+		background: var(--bg);
+		padding: 6rem 0 5rem;
 		text-align: center;
 	}
 
-	h1 {
+	.hero h1 {
 		font-size: 3rem;
 		letter-spacing: -0.02em;
-		margin-bottom: 0.5rem;
+		margin: 0 0 1rem;
+		max-width: 44rem;
+		margin-inline: auto;
 	}
 
-	.mission {
-		font-size: 1.25rem;
+	.subtitle {
+		font-size: 1.15rem;
 		color: var(--text-muted);
-		margin-bottom: 2.5rem;
+		max-width: 40rem;
+		margin: 0 auto 2.5rem;
+		line-height: 1.6;
 	}
 
 	.cta {
@@ -75,5 +168,166 @@ import Base from '../layouts/Base.astro';
 
 	.btn-secondary:hover {
 		background: var(--surface-hover);
+	}
+
+	.light {
+		background: var(--bg-light);
+		color: var(--text-on-light);
+		padding: 5rem 0;
+	}
+
+	.section-title {
+		text-align: center;
+		font-size: 2rem;
+		letter-spacing: -0.02em;
+		margin: 3.5rem 0 0.5rem;
+	}
+
+	.light .section-title:first-child {
+		margin-top: 0;
+	}
+
+	.section-subtitle {
+		text-align: center;
+		color: var(--text-muted-on-light);
+		margin: 0 0 2.5rem;
+	}
+
+	.mission {
+		text-align: center;
+		max-width: 44rem;
+		margin: 0 auto;
+		color: var(--text-muted-on-light);
+		line-height: 1.7;
+		font-size: 1.05rem;
+	}
+
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.25rem;
+	}
+
+	@media (max-width: 55rem) {
+		.cards,
+		.steps {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		background: var(--surface-light);
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius);
+		padding: 1.75rem;
+		text-decoration: none;
+		color: var(--text-on-light);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+
+	.card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+	}
+
+	.card-icon {
+		width: 2rem;
+		height: 2rem;
+		color: var(--accent);
+	}
+
+	.card-title {
+		font-weight: 700;
+		font-size: 1.1rem;
+	}
+
+	.card-desc {
+		color: var(--text-muted-on-light);
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.steps {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 1.25rem;
+	}
+
+	.step {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		background: var(--surface-light);
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius);
+		padding: 1.5rem;
+	}
+
+	.step-top {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 0.25rem;
+	}
+
+	.step-number {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 50%;
+		background: var(--accent);
+		color: #fff;
+		font-weight: 700;
+		flex-shrink: 0;
+	}
+
+	.step-icon {
+		width: 1.5rem;
+		height: 1.5rem;
+		color: var(--accent);
+	}
+
+	.step-title {
+		font-weight: 700;
+	}
+
+	.step-desc {
+		color: var(--text-muted-on-light);
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.start-cta {
+		text-align: center;
+		margin-top: 2.5rem;
+	}
+
+	footer {
+		background: var(--bg);
+	}
+
+	.footer-inner {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		padding-top: 2rem;
+		padding-bottom: 2rem;
+	}
+
+	.footer-inner .brand {
+		font-weight: 700;
+	}
+
+	.footer-inner .copyright {
+		color: var(--text-muted);
+		font-size: 0.85rem;
 	}
 </style>

@@ -1,6 +1,13 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { EXAM_SUBJECTS } from '../../data/examens';
+import { ICONS } from '../../data/icons';
+
+const SUBJECT_ICONS: Record<string, string> = {
+	fisica: ICONS.atom,
+	'matematiques-ii': ICONS.function,
+	'macs-ii': ICONS.chart,
+};
 ---
 
 <Base title="Learning Hub">
@@ -8,17 +15,20 @@ import { EXAM_SUBJECTS } from '../../data/examens';
 		<h1>Learning Hub</h1>
 		<p>Tria una assignatura per accedir a la teoria, els qüestionaris i els exàmens anteriors.</p>
 
-		<ul class="subjects">
+		<div class="subjects">
 			{EXAM_SUBJECTS.map((s) => (
-				<li><a href={`/learning/${s.slug}`}>{s.label}</a></li>
+				<a class="subject-card" href={`/learning/${s.slug}`}>
+					<span class="icon" set:html={SUBJECT_ICONS[s.slug]} />
+					<span class="label">{s.label}</span>
+				</a>
 			))}
-		</ul>
+		</div>
 	</main>
 </Base>
 
 <style>
 	main {
-		max-width: 42rem;
+		max-width: 72rem;
 		margin: 0 auto;
 		padding: 2rem 1.5rem;
 		line-height: 1.6;
@@ -29,17 +39,25 @@ import { EXAM_SUBJECTS } from '../../data/examens';
 	}
 
 	.subjects {
-		list-style: none;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1rem;
 		margin-top: 1.5rem;
 	}
 
-	.subjects a {
-		display: block;
-		padding: 1.1rem 1.25rem;
+	@media (max-width: 48rem) {
+		.subjects {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.subject-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+		text-align: center;
+		padding: 2rem 1.25rem;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
@@ -49,8 +67,14 @@ import { EXAM_SUBJECTS } from '../../data/examens';
 		transition: transform 0.2s, background 0.2s;
 	}
 
-	.subjects a:hover {
+	.subject-card:hover {
 		background: var(--surface-hover);
 		transform: translateY(-3px);
+	}
+
+	.subject-card .icon {
+		width: 2.5rem;
+		height: 2.5rem;
+		color: var(--accent-strong);
 	}
 </style>

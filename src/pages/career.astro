@@ -75,6 +75,19 @@ import Base from '../layouts/Base.astro';
 
 				<input type="search" id="degree-search" placeholder="Cerca un grau, universitat o ciutat…" />
 
+				<div class="filter-bar">
+					<select id="filter-city">
+						<option value="">Totes les ciutats</option>
+					</select>
+					<select id="filter-university">
+						<option value="">Totes les universitats</option>
+					</select>
+					<label class="filter-checkbox">
+						<input type="checkbox" id="filter-achievable" />
+						Assolible amb la meva nota
+					</label>
+				</div>
+
 				<p class="hint" id="degree-status">Escriu per cercar entre els graus universitaris espanyols.</p>
 
 				<ul class="degree-list" id="degree-list"></ul>
@@ -85,7 +98,7 @@ import Base from '../layouts/Base.astro';
 
 <style>
 	main {
-		max-width: 64rem;
+		max-width: 75rem;
 		margin: 0 auto;
 		padding: 2rem 1.5rem;
 		line-height: 1.6;
@@ -244,6 +257,34 @@ import Base from '../layouts/Base.astro';
 		color: var(--text);
 	}
 
+	.filter-bar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		align-items: center;
+		margin: 0.75rem 0;
+	}
+
+	.filter-bar select {
+		width: auto;
+		margin-top: 0;
+		flex: 1;
+		min-width: 10rem;
+	}
+
+	.filter-checkbox {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.9rem;
+		white-space: nowrap;
+	}
+
+	.filter-checkbox input {
+		width: auto;
+		margin: 0;
+	}
+
 	.degree-list {
 		list-style: none;
 		padding: 0;
@@ -329,7 +370,18 @@ import Base from '../layouts/Base.astro';
 	const targetCutoffEl = document.getElementById('target-cutoff')!;
 	const targetClear = document.getElementById('target-clear')!;
 
+	const searchInput = document.getElementById('degree-search') as HTMLInputElement;
+	const cityFilter = document.getElementById('filter-city') as HTMLSelectElement;
+	const universityFilter = document.getElementById('filter-university') as HTMLSelectElement;
+	const achievableFilter = document.getElementById('filter-achievable') as HTMLInputElement;
+	const listEl = document.getElementById('degree-list')!;
+	const statusEl = document.getElementById('degree-status')!;
+
 	let targetCutoff: number | null = null;
+	let currentAdmissio: number | null = null;
+	let degrees: Degree[] = [];
+
+	const MAX_RESULTS = 100;
 
 	function num(input: HTMLInputElement): number {
 		const v = Number(input.value);
@@ -340,81 +392,32 @@ import Base from '../layouts/Base.astro';
 		return grade > 5 ? weight * grade : 0;
 	}
 
-	function compute() {
-		const batx = num(batxInput);
-		const exercicis = exerciciInputs.map(num);
-		const faseGeneral = exercicis.reduce((a, b) => a + b, 0) / exercicis.length;
-
-		const especifica =
-			specificSubjectPoints(num(m1Grade), Number(m1Weight.value)) +
-			specificSubjectPoints(num(m2Grade), Number(m2Weight.value));
-
-		outEspecifica.textContent = especifica.toFixed(3);
-
-		if (faseGeneral < 4) {
-			outAcces.textContent = "No vàlida (Fase General < 4)";
-			outAdmissio.textContent = '—';
-			admissioRow.classList.remove('pass');
-			return;
-		}
-
-		const accesRaw = 0.6 * batx + 0.4 * faseGeneral;
-		const acces = Math.min(10, Math.max(5, accesRaw));
-		const admissio = Math.min(14, acces + especifica);
-
-		outAcces.textContent = acces.toFixed(3);
-		outAdmissio.textContent = admissio.toFixed(3);
-
-		if (targetCutoff !== null && admissio >= targetCutoff) {
-			admissioRow.classList.add('pass');
-		} else {
-			admissioRow.classList.remove('pass');
-		}
-	}
-
-	[batxInput, ...exerciciInputs, m1Grade, m1Weight, m2Grade, m2Weight].forEach((el) =>
-		el.addEventListener('input', compute)
-	);
-	compute();
-
-	function setTarget(degree: Degree) {
-		if (degree.cutoff === null) return;
-		targetCutoff = degree.cutoff;
-		targetName.textContent = degree.name;
-		targetCutoffEl.textContent = degree.cutoff.toFixed(3);
-		targetBox.hidden = false;
-		compute();
-	}
-
-	targetClear.addEventListener('click', () => {
-		targetCutoff = null;
-		targetBox.hidden = true;
-		compute();
-	});
-
-	const searchInput = document.getElementById('degree-search') as HTMLInputElement;
-	const listEl = document.getElementById('degree-list')!;
-	const statusEl = document.getElementById('degree-status')!;
-
-	let degrees: Degree[] = [];
-
-	const MAX_RESULTS = 100;
-
 	function renderResults(query: string) {
 		listEl.innerHTML = '';
 
-		if (query.trim().length < 2) {
-			statusEl.textContent = 'Escriu per cercar entre els graus universitaris espanyols.';
+		const q = query.trim().toLowerCase();
+		const city = cityFilter.value;
+		const university = universityFilter.value;
+		const achievableOnly = achievableFilter.checked;
+
+		const hasActiveFilter = q.length >= 2 || city !== '' || university !== '' || achievableOnly;
+
+		if (!hasActiveFilter) {
+			statusEl.textContent = 'Escriu per cercar, o aplica un filtre, entre els graus universitaris espanyols.';
 			return;
 		}
 
-		const q = query.trim().toLowerCase();
-		const matches = degrees.filter(
-			(d) =>
-				d.name.toLowerCase().includes(q) ||
-				d.university.toLowerCase().includes(q) ||
-				d.city.toLowerCase().includes(q)
-		);
+		const matches = degrees.filter((d) => {
+			if (q && !(d.name.toLowerCase().includes(q) || d.university.toLowerCase().includes(q) || d.city.toLowerCase().includes(q))) {
+				return false;
+			}
+			if (city && d.city !== city) return false;
+			if (university && d.university !== university) return false;
+			if (achievableOnly) {
+				if (currentAdmissio === null || d.cutoff === null || d.cutoff > currentAdmissio) return false;
+			}
+			return true;
+		});
 
 		statusEl.textContent = matches.length
 			? `${matches.length} resultat(s)${matches.length > MAX_RESULTS ? `, mostrant els primers ${MAX_RESULTS}` : ''}`
@@ -449,12 +452,91 @@ import Base from '../layouts/Base.astro';
 		}
 	}
 
+	function compute() {
+		const batx = num(batxInput);
+		const exercicis = exerciciInputs.map(num);
+		const faseGeneral = exercicis.reduce((a, b) => a + b, 0) / exercicis.length;
+
+		const especifica =
+			specificSubjectPoints(num(m1Grade), Number(m1Weight.value)) +
+			specificSubjectPoints(num(m2Grade), Number(m2Weight.value));
+
+		outEspecifica.textContent = especifica.toFixed(3);
+
+		if (faseGeneral < 4) {
+			outAcces.textContent = "No vàlida (Fase General < 4)";
+			outAdmissio.textContent = '—';
+			admissioRow.classList.remove('pass');
+			currentAdmissio = null;
+			renderResults(searchInput.value);
+			return;
+		}
+
+		const accesRaw = 0.6 * batx + 0.4 * faseGeneral;
+		const acces = Math.min(10, Math.max(5, accesRaw));
+		const admissio = Math.min(14, acces + especifica);
+
+		outAcces.textContent = acces.toFixed(3);
+		outAdmissio.textContent = admissio.toFixed(3);
+		currentAdmissio = admissio;
+
+		if (targetCutoff !== null && admissio >= targetCutoff) {
+			admissioRow.classList.add('pass');
+		} else {
+			admissioRow.classList.remove('pass');
+		}
+
+		renderResults(searchInput.value);
+	}
+
+	[batxInput, ...exerciciInputs, m1Grade, m1Weight, m2Grade, m2Weight].forEach((el) =>
+		el.addEventListener('input', compute)
+	);
+	compute();
+
+	function setTarget(degree: Degree) {
+		if (degree.cutoff === null) return;
+		targetCutoff = degree.cutoff;
+		targetName.textContent = degree.name;
+		targetCutoffEl.textContent = degree.cutoff.toFixed(3);
+		targetBox.hidden = false;
+		compute();
+	}
+
+	targetClear.addEventListener('click', () => {
+		targetCutoff = null;
+		targetBox.hidden = true;
+		compute();
+	});
+
 	searchInput.addEventListener('input', () => renderResults(searchInput.value));
+	cityFilter.addEventListener('change', () => renderResults(searchInput.value));
+	universityFilter.addEventListener('change', () => renderResults(searchInput.value));
+	achievableFilter.addEventListener('change', () => renderResults(searchInput.value));
+
+	function populateFilterOptions() {
+		const cities = [...new Set(degrees.map((d) => d.city).filter(Boolean))].sort();
+		const universities = [...new Set(degrees.map((d) => d.university).filter(Boolean))].sort();
+
+		for (const city of cities) {
+			const opt = document.createElement('option');
+			opt.value = city;
+			opt.textContent = city;
+			cityFilter.appendChild(opt);
+		}
+		for (const uni of universities) {
+			const opt = document.createElement('option');
+			opt.value = uni;
+			opt.textContent = uni;
+			universityFilter.appendChild(opt);
+		}
+	}
 
 	fetch('/data/degrees.json')
 		.then((res) => res.json())
 		.then((data: Degree[]) => {
 			degrees = data;
+			populateFilterOptions();
 			renderResults(searchInput.value);
 		});
 </script>

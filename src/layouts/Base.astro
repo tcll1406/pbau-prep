@@ -32,6 +32,11 @@ const NAV_LINKS = [
 					{NAV_LINKS.map((link) => (
 						<li><a href={link.href}>{link.label}</a></li>
 					))}
+					<li id="nav-auth-logged-out"><a href="/login">Inicia sessió</a></li>
+					<li id="nav-auth-logged-in" hidden>
+						<span id="nav-user-email" class="nav-user-email"></span>
+						<button id="nav-logout" type="button">Tancar sessió</button>
+					</li>
 				</ul>
 			</nav>
 		</header>
@@ -54,6 +59,12 @@ const NAV_LINKS = [
 		--radius: 1rem;
 		--radius-sm: 0.6rem;
 		--font: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+		--bg-light: #f5f1e8;
+		--surface-light: #ffffff;
+		--border-light: rgba(10, 17, 40, 0.1);
+		--text-on-light: #1a1a2e;
+		--text-muted-on-light: #5a5a6e;
 	}
 
 	html {
@@ -90,7 +101,7 @@ const NAV_LINKS = [
 	}
 
 	nav {
-		max-width: 60rem;
+		max-width: 75rem;
 		margin: 0 auto;
 		padding: 1rem 1.5rem;
 		display: flex;
@@ -132,6 +143,34 @@ const NAV_LINKS = [
 		color: var(--text);
 	}
 
+	#nav-auth-logged-in {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.nav-user-email {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+	}
+
+	#nav-logout {
+		background: none;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--text-muted);
+		padding: 0.3rem 0.7rem;
+		font-size: 0.85rem;
+		font-family: var(--font);
+		cursor: pointer;
+		transition: color 0.2s, border-color 0.2s;
+	}
+
+	#nav-logout:hover {
+		color: var(--text);
+		border-color: var(--accent);
+	}
+
 	@media (max-width: 40rem) {
 		#nav-toggle {
 			display: block;
@@ -162,5 +201,28 @@ const NAV_LINKS = [
 	toggle?.addEventListener('click', () => {
 		const isOpen = links?.classList.toggle('open');
 		toggle.setAttribute('aria-expanded', String(Boolean(isOpen)));
+	});
+</script>
+
+<script>
+	import { supabase } from '../lib/supabase-client';
+
+	const loggedOut = document.getElementById('nav-auth-logged-out')!;
+	const loggedIn = document.getElementById('nav-auth-logged-in')!;
+	const userEmail = document.getElementById('nav-user-email')!;
+	const logoutBtn = document.getElementById('nav-logout')!;
+
+	function render(email: string | null) {
+		loggedOut.hidden = Boolean(email);
+		loggedIn.hidden = !email;
+		userEmail.textContent = email ?? '';
+	}
+
+	supabase.auth.getSession().then(({ data }) => render(data.session?.user.email ?? null));
+	supabase.auth.onAuthStateChange((_event, session) => render(session?.user.email ?? null));
+
+	logoutBtn.addEventListener('click', async () => {
+		await supabase.auth.signOut();
+		window.location.href = '/';
 	});
 </script>

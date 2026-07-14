@@ -5,12 +5,14 @@ import 'katex/dist/katex.min.css';
 
 interface Props {
 	questions: Question[];
+	manualInit?: boolean;
 }
 
-const { questions } = Astro.props;
+const { questions, manualInit = false } = Astro.props;
 
 const rendered = await Promise.all(
 	questions.map(async (q) => ({
+		id: q.id,
 		statement: await renderLatex(q.statement),
 		options: await Promise.all(
 			(['A', 'B', 'C', 'D'] as const).map(async (key) => ({
@@ -23,7 +25,7 @@ const rendered = await Promise.all(
 );
 ---
 
-<div class="quiz" id="quiz">
+<div class="quiz" id="quiz" data-manual-init={manualInit ? 'true' : 'false'}>
 	<div class="quiz-progress">
 		<span>Pregunta <span id="quiz-current">1</span> / <span id="quiz-total">{rendered.length}</span></span>
 		<span class="quiz-score">Encerts: <span id="quiz-score">0</span></span>
@@ -31,7 +33,7 @@ const rendered = await Promise.all(
 
 	<div class="quiz-body">
 		{rendered.map((q, i) => (
-			<div class="question" data-index={i} hidden>
+			<div class="question" data-index={i} data-question-id={q.id} hidden>
 				<p class="statement" set:html={q.statement} />
 				<div class="options">
 					{q.options.map((opt) => (
@@ -179,6 +181,8 @@ const rendered = await Promise.all(
 </style>
 
 <script>
+	import { supabase } from '../lib/supabase-client';
+
 	function shuffle<T>(arr: T[]): T[] {
 		for (let i = arr.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
@@ -232,9 +236,16 @@ const rendered = await Promise.all(
 		currentEl.textContent = String(pointer + 1);
 	}
 
+	async function recordAttempt(questionId: number, correct: boolean) {
+		const { data } = await supabase.auth.getSession();
+		const userId = data.session?.user.id;
+		if (!userId) return;
+		await supabase.from('question_attempts').upsert({ user_id: userId, question_id: questionId, correct });
+	}
+
 	function handleOptionClick(e: Event) {
 		const btn = e.currentTarget as HTMLButtonElement;
-		const question = btn.closest('.question')!;
+		const question = btn.closest('.question') as HTMLElement;
 		const options = question.querySelectorAll<HTMLButtonElement>('.option');
 
 		options.forEach((opt) => {
@@ -242,12 +253,16 @@ const rendered = await Promise.all(
 			if (opt.dataset.correct === 'true') opt.classList.add('correct');
 		});
 
-		if (btn.dataset.correct === 'true') {
+		const isCorrect = btn.dataset.correct === 'true';
+		if (isCorrect) {
 			score += 1;
 			scoreEl.textContent = String(score);
 		} else {
 			btn.classList.add('incorrect');
 		}
+
+		const questionId = Number(question.dataset.questionId);
+		recordAttempt(questionId, isCorrect);
 
 		question.querySelector('.feedback')!.removeAttribute('hidden');
 		question.querySelector('.next')!.removeAttribute('hidden');
@@ -271,5 +286,9 @@ const rendered = await Promise.all(
 
 	restartBtn.addEventListener('click', setup);
 
-	setup();
+	if (quiz.dataset.manualInit === 'true') {
+		(quiz as HTMLElement & { pbauInit?: () => void }).pbauInit = setup;
+	} else {
+		setup();
+	}
 </script>

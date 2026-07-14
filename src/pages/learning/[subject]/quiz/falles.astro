@@ -1,0 +1,126 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import Quiz from '../../../../components/Quiz.astro';
+import { EXAM_SUBJECTS } from '../../../../data/examens';
+import { fetchQuestions } from '../../../../lib/questions';
+
+export async function getStaticPaths() {
+	return Promise.all(
+		EXAM_SUBJECTS.map(async (subject) => ({
+			params: { subject: subject.slug },
+			props: { subject, questions: await fetchQuestions({ subject: subject.slug }) },
+		}))
+	);
+}
+
+const { subject, questions } = Astro.props;
+---
+
+<Base title={`Preguntes falles — ${subject.label}`}>
+	<main>
+		<a class="back" href={`/learning/${subject.slug}/quiz`}>← {subject.label}</a>
+		<h1>Preguntes falles</h1>
+		<p class="intro">Repassa les preguntes que has fallat en qüestionaris anteriors de {subject.label}.</p>
+
+		<div id="login-prompt" class="prompt" hidden>
+			<p>Has d'iniciar sessió per veure les teves preguntes falles.</p>
+			<a class="btn" href={`/login?redirect=/learning/${subject.slug}/quiz/falles`}>Inicia sessió</a>
+		</div>
+
+		<div id="empty-state" class="prompt" hidden>
+			<p>Encara no has fallat cap pregunta d'aquesta assignatura. Fes algun qüestionari primer!</p>
+			<a class="btn" href={`/learning/${subject.slug}/quiz`}>Veure els qüestionaris</a>
+		</div>
+
+		<Quiz questions={questions} manualInit={true} />
+	</main>
+</Base>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	.back {
+		display: inline-block;
+		margin-bottom: 1rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+
+	.back:hover {
+		color: var(--text);
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	.intro {
+		color: var(--text-muted);
+		margin-bottom: 2rem;
+	}
+
+	.prompt {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.5rem;
+		text-align: center;
+	}
+
+	.prompt .btn {
+		display: inline-block;
+		margin-top: 0.75rem;
+		background: var(--accent);
+		color: #fff;
+		text-decoration: none;
+		border-radius: var(--radius-sm);
+		padding: 0.6rem 1.25rem;
+		font-weight: 600;
+	}
+</style>
+
+<script>
+	import { supabase } from '../../../../lib/supabase-client';
+	import { applyQuizFilter, getAllRenderedQuestionIds } from '../../../../lib/quiz-filter-client';
+
+	const quizEl = document.getElementById('quiz')!;
+	const loginPrompt = document.getElementById('login-prompt')!;
+	const emptyState = document.getElementById('empty-state')!;
+
+	async function init() {
+		const { data } = await supabase.auth.getSession();
+		const userId = data.session?.user.id;
+
+		if (!userId) {
+			quizEl.hidden = true;
+			loginPrompt.hidden = false;
+			return;
+		}
+
+		const allIds = getAllRenderedQuestionIds();
+		const { data: attempts } = await supabase
+			.from('question_attempts')
+			.select('question_id')
+			.eq('user_id', userId)
+			.eq('correct', false)
+			.in('question_id', allIds);
+
+		const failedIds = new Set((attempts ?? []).map((a) => a.question_id as number));
+
+		if (failedIds.size === 0) {
+			quizEl.hidden = true;
+			emptyState.hidden = false;
+			return;
+		}
+
+		await applyQuizFilter(failedIds);
+	}
+
+	init();
+</script>

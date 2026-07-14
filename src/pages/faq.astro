@@ -15,6 +15,24 @@ import { FAQ_ITEMS } from '../data/faq';
 				</details>
 			))}
 		</div>
+
+		<section class="ask">
+			<h2>No has trobat la resposta?</h2>
+
+			<div id="ask-logged-out" class="prompt">
+				<p>Inicia sessió per fer-nos una pregunta directament.</p>
+				<a class="btn" href="/faq" id="ask-login-link">Inicia sessió</a>
+			</div>
+
+			<form id="ask-form" class="prompt" hidden>
+				<label>
+					La teva pregunta
+					<textarea id="ask-question" rows="4" required></textarea>
+				</label>
+				<button type="submit" class="btn">Enviar pregunta</button>
+				<p id="ask-status" class="status" hidden></p>
+			</form>
+		</section>
 	</main>
 </Base>
 
@@ -54,4 +72,123 @@ import { FAQ_ITEMS } from '../data/faq';
 		margin-bottom: 0;
 		color: var(--text-muted);
 	}
+
+	.ask {
+		margin-top: 2.5rem;
+	}
+
+	.ask h2 {
+		font-size: 1.3rem;
+	}
+
+	.prompt {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.5rem;
+	}
+
+	.prompt p {
+		color: var(--text-muted);
+		margin-top: 0;
+	}
+
+	label {
+		display: block;
+		font-size: 0.9rem;
+		color: var(--text-muted);
+		margin-bottom: 1rem;
+	}
+
+	textarea {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		margin-top: 0.35rem;
+		padding: 0.6rem;
+		background: var(--bg);
+		color: var(--text);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		font-family: var(--font);
+		font-size: 1rem;
+		resize: vertical;
+	}
+
+	textarea:focus {
+		outline: none;
+		border-color: var(--accent);
+	}
+
+	.btn {
+		display: inline-block;
+		background: var(--accent);
+		color: #fff;
+		border: none;
+		text-decoration: none;
+		border-radius: var(--radius-sm);
+		padding: 0.6rem 1.25rem;
+		font-size: 0.95rem;
+		font-weight: 600;
+		font-family: var(--font);
+		cursor: pointer;
+	}
+
+	.status {
+		margin: 1rem 0 0;
+		font-size: 0.9rem;
+	}
+
+	.status.success {
+		color: var(--success);
+	}
+
+	.status.error {
+		color: #ef4444;
+	}
 </style>
+
+<script>
+	import { supabase } from '../lib/supabase-client';
+
+	const loggedOut = document.getElementById('ask-logged-out')!;
+	const form = document.getElementById('ask-form') as HTMLFormElement;
+	const questionInput = document.getElementById('ask-question') as HTMLTextAreaElement;
+	const statusEl = document.getElementById('ask-status')!;
+	const loginLink = document.getElementById('ask-login-link') as HTMLAnchorElement;
+
+	loginLink.href = '/login?redirect=/faq';
+
+	async function refresh() {
+		const { data } = await supabase.auth.getSession();
+		const loggedIn = Boolean(data.session);
+		loggedOut.hidden = loggedIn;
+		form.hidden = !loggedIn;
+	}
+
+	refresh();
+	supabase.auth.onAuthStateChange(refresh);
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const { data } = await supabase.auth.getSession();
+		const session = data.session;
+		if (!session) return;
+
+		const { error } = await supabase.from('faq_questions').insert({
+			user_id: session.user.id,
+			email: session.user.email,
+			question: questionInput.value.trim(),
+		});
+
+		statusEl.hidden = false;
+		if (error) {
+			statusEl.textContent = 'Hi ha hagut un error. Torna-ho a provar.';
+			statusEl.className = 'status error';
+		} else {
+			statusEl.textContent = "Pregunta enviada! Et respondrem per correu.";
+			statusEl.className = 'status success';
+			form.reset();
+		}
+	});
+</script>

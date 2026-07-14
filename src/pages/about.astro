@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { TIPS } from '../data/tips';
 ---
 
 <Base title="Sobre nosaltres">
@@ -42,12 +43,27 @@ import Base from '../layouts/Base.astro';
 				sense distraccions.
 			</p>
 		</section>
+
+		<section id="tips" class="tips-section">
+			<h2>Tips per triomfar</h2>
+			<p class="tips-intro">Consells d'un antic estudiant de Batxillerat que va passar per la PBAU.</p>
+
+			<div class="tips-grid">
+				{TIPS.map((tip) => (
+					<article class="tip-card">
+						<span class="tip-category">{tip.category}</span>
+						<h3>{tip.title}</h3>
+						<p>{tip.content}</p>
+					</article>
+				))}
+			</div>
+		</section>
 	</main>
 </Base>
 
 <style>
 	main {
-		max-width: 42rem;
+		max-width: 64rem;
 		margin: 0 auto;
 		padding: 2rem 1.5rem;
 		line-height: 1.6;
@@ -71,5 +87,43 @@ import Base from '../layouts/Base.astro';
 
 	section p {
 		color: var(--text-muted);
+	}
+
+	.tips-intro {
+		margin-top: 0;
+	}
+
+	.tips-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+		gap: 1rem;
+		margin-top: 1.5rem;
+	}
+
+	.tip-card {
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		padding: 1.25rem;
+	}
+
+	.tip-category {
+		display: inline-block;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: var(--gold);
+		margin-bottom: 0.5rem;
+	}
+
+	.tip-card h3 {
+		margin: 0 0 0.5rem;
+		font-size: 1.05rem;
+	}
+
+	.tip-card p {
+		margin: 0;
+		font-size: 0.9rem;
 	}
 </style>
