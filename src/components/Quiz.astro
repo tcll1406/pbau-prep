@@ -193,18 +193,34 @@ const rendered = await Promise.all(
 
 	const quiz = document.getElementById('quiz')!;
 	const body = quiz.querySelector('.quiz-body') as HTMLElement;
-	const questions = Array.from(quiz.querySelectorAll<HTMLElement>('.question'));
 	const quizEnd = document.getElementById('quiz-end')!;
 	const currentEl = document.getElementById('quiz-current')!;
+	const totalEl = document.getElementById('quiz-total')!;
 	const scoreEl = document.getElementById('quiz-score')!;
 	const finalScoreEl = document.getElementById('quiz-final-score')!;
 	const restartBtn = document.getElementById('quiz-restart')!;
 
+	let questions: HTMLElement[] = [];
+	let listenersAttached = false;
 	let order: number[] = [];
 	let pointer = 0;
 	let score = 0;
 
 	function setup() {
+		// Re-query on every setup() call (not just once at module load) so that
+		// pages which filter/remove `.question` elements before calling pbauInit()
+		// (aleatori, errors) operate on the actual remaining set, not the original.
+		questions = Array.from(body.querySelectorAll<HTMLElement>('.question'));
+		totalEl.textContent = String(questions.length);
+
+		if (!listenersAttached) {
+			questions.forEach((q) => {
+				q.querySelectorAll('.option').forEach((opt) => opt.addEventListener('click', handleOptionClick));
+				q.querySelector('.next')!.addEventListener('click', handleNextClick);
+			});
+			listenersAttached = true;
+		}
+
 		order = shuffle(questions.map((_, i) => i));
 		pointer = 0;
 		score = 0;
@@ -278,11 +294,6 @@ const rendered = await Promise.all(
 			showCurrent();
 		}
 	}
-
-	questions.forEach((q) => {
-		q.querySelectorAll('.option').forEach((opt) => opt.addEventListener('click', handleOptionClick));
-		q.querySelector('.next')!.addEventListener('click', handleNextClick);
-	});
 
 	restartBtn.addEventListener('click', setup);
 

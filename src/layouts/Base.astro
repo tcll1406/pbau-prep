@@ -1,4 +1,6 @@
 ---
+import { ICONS } from '../data/icons';
+
 interface Props {
 	title: string;
 }
@@ -32,10 +34,22 @@ const NAV_LINKS = [
 					{NAV_LINKS.map((link) => (
 						<li><a href={link.href}>{link.label}</a></li>
 					))}
-					<li id="nav-auth-logged-out"><a href="/login">Inicia sessió</a></li>
-					<li id="nav-auth-logged-in" hidden>
-						<span id="nav-user-email" class="nav-user-email"></span>
-						<button id="nav-logout" type="button">Tancar sessió</button>
+					<li id="nav-auth-logged-out">
+						<a href="/login" class="nav-user-btn" aria-label="Inicia sessió" set:html={ICONS.user} />
+					</li>
+					<li id="nav-auth-logged-in" class="nav-auth-dropdown" hidden>
+						<button
+							id="nav-user-toggle"
+							type="button"
+							class="nav-user-btn"
+							aria-label="El meu compte"
+							aria-expanded="false"
+							set:html={ICONS.user}
+						/>
+						<div id="nav-dropdown" class="nav-dropdown" hidden>
+							<span id="nav-user-email" class="nav-user-email"></span>
+							<button id="nav-logout" type="button">Tancar sessió</button>
+						</div>
 					</li>
 				</ul>
 			</nav>
@@ -143,15 +157,55 @@ const NAV_LINKS = [
 		color: var(--text);
 	}
 
-	#nav-auth-logged-in {
+	.nav-auth-dropdown {
+		position: relative;
+	}
+
+	.nav-user-btn {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		padding: 0;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 50%;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition: color 0.2s, border-color 0.2s;
+	}
+
+	.nav-user-btn svg {
+		width: 1.1rem;
+		height: 1.1rem;
+	}
+
+	.nav-user-btn:hover,
+	#nav-user-toggle[aria-expanded='true'] {
+		color: var(--text);
+		border-color: var(--accent);
+	}
+
+	.nav-dropdown {
+		position: absolute;
+		top: calc(100% + 0.5rem);
+		right: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		min-width: 12rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		padding: 0.75rem;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 	}
 
 	.nav-user-email {
 		font-size: 0.85rem;
 		color: var(--text-muted);
+		word-break: break-all;
 	}
 
 	#nav-logout {
@@ -159,7 +213,7 @@ const NAV_LINKS = [
 		border: 1px solid var(--border);
 		border-radius: var(--radius-sm);
 		color: var(--text-muted);
-		padding: 0.3rem 0.7rem;
+		padding: 0.4rem 0.7rem;
 		font-size: 0.85rem;
 		font-family: var(--font);
 		cursor: pointer;
@@ -211,6 +265,8 @@ const NAV_LINKS = [
 	const loggedIn = document.getElementById('nav-auth-logged-in')!;
 	const userEmail = document.getElementById('nav-user-email')!;
 	const logoutBtn = document.getElementById('nav-logout')!;
+	const userToggle = document.getElementById('nav-user-toggle')!;
+	const dropdown = document.getElementById('nav-dropdown')!;
 
 	function render(email: string | null) {
 		loggedOut.hidden = Boolean(email);
@@ -220,6 +276,25 @@ const NAV_LINKS = [
 
 	supabase.auth.getSession().then(({ data }) => render(data.session?.user.email ?? null));
 	supabase.auth.onAuthStateChange((_event, session) => render(session?.user.email ?? null));
+
+	function closeDropdown() {
+		dropdown.hidden = true;
+		userToggle.setAttribute('aria-expanded', 'false');
+	}
+
+	userToggle.addEventListener('click', () => {
+		const isOpen = dropdown.hidden;
+		dropdown.hidden = !isOpen;
+		userToggle.setAttribute('aria-expanded', String(isOpen));
+	});
+
+	document.addEventListener('click', (e) => {
+		if (!loggedIn.contains(e.target as Node)) closeDropdown();
+	});
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') closeDropdown();
+	});
 
 	logoutBtn.addEventListener('click', async () => {
 		await supabase.auth.signOut();

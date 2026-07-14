@@ -22,12 +22,12 @@ const topics = getSubjectTopics(subject.slug);
 			<a class="widget random" href={`/learning/${subject.slug}/quiz/aleatori`}>
 				<span class="icon" set:html={ICONS.random} />
 				<span class="widget-title">Aleatori</span>
-				<span class="widget-desc">10 preguntes a l'atzar de totes les temes</span>
+				<span class="widget-desc">10 preguntes a l'atzar de tots els temes</span>
 			</a>
 
-			<a class="widget falles" href={`/learning/${subject.slug}/quiz/falles`}>
+			<a class="widget errors" href={`/learning/${subject.slug}/quiz/errors`}>
 				<span class="icon" set:html={ICONS.redo} />
-				<span class="widget-title">Preguntes falles</span>
+				<span class="widget-title">Test d'errors</span>
 				<span class="widget-desc">Repassa les que has fallat (cal iniciar sessió)</span>
 			</a>
 

@@ -31,4 +31,5 @@ export const ICONS: Record<string, string> = {
 		'<path d="M9 21c1.5-4 2.5-11 2-15 0 0-.3-2 1.5-2s1.5 2 1.5 2"/><path d="M7 10h7"/>'
 	),
 	chart: wrap('<path d="M4 20V10M11 20V4M18 20v-7"/><path d="M2 20h20"/>'),
+	user: wrap('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>'),
 };
