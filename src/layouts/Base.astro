@@ -39,9 +39,54 @@ const NAV_LINKS = [
 	</body>
 </html>
 
+<style is:global>
+	:root {
+		--bg: #0a1128;
+		--surface: #131b3a;
+		--surface-hover: #182252;
+		--border: rgba(255, 255, 255, 0.08);
+		--text: #f5f6fa;
+		--text-muted: #9aa3b2;
+		--accent: #3b82f6;
+		--accent-strong: #60a5fa;
+		--gold: #facc15;
+		--success: #22c55e;
+		--radius: 1rem;
+		--radius-sm: 0.6rem;
+		--font: system-ui, -apple-system, "Segoe UI", sans-serif;
+	}
+
+	html {
+		background: var(--bg);
+		color-scheme: dark;
+	}
+
+	body {
+		margin: 0;
+		background: var(--bg);
+		color: var(--text);
+		font-family: var(--font);
+	}
+
+	a {
+		color: var(--accent-strong);
+	}
+
+	::selection {
+		background: var(--accent);
+		color: #fff;
+	}
+</style>
+
 <style>
 	header {
-		border-bottom: 1px solid #ddd;
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		background: rgba(10, 17, 40, 0.7);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border-bottom: 1px solid var(--border);
 	}
 
 	nav {
@@ -51,19 +96,20 @@ const NAV_LINKS = [
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		font-family: system-ui, sans-serif;
+		font-family: var(--font);
 	}
 
 	.brand {
 		font-weight: 700;
 		text-decoration: none;
-		color: inherit;
+		color: var(--text);
 	}
 
 	#nav-toggle {
 		display: none;
 		background: none;
 		border: none;
+		color: var(--text);
 		font-size: 1.5rem;
 		cursor: pointer;
 	}
@@ -78,7 +124,12 @@ const NAV_LINKS = [
 
 	#nav-links a {
 		text-decoration: none;
-		color: inherit;
+		color: var(--text-muted);
+		transition: color 0.2s;
+	}
+
+	#nav-links a:hover {
+		color: var(--text);
 	}
 
 	@media (max-width: 40rem) {

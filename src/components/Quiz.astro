@@ -1,0 +1,275 @@
+---
+import { renderLatex } from '../lib/render-latex';
+import type { Question } from '../lib/questions';
+import 'katex/dist/katex.min.css';
+
+interface Props {
+	questions: Question[];
+}
+
+const { questions } = Astro.props;
+
+const rendered = await Promise.all(
+	questions.map(async (q) => ({
+		statement: await renderLatex(q.statement),
+		options: await Promise.all(
+			(['A', 'B', 'C', 'D'] as const).map(async (key) => ({
+				text: await renderLatex(q[`option_${key.toLowerCase()}` as 'option_a' | 'option_b' | 'option_c' | 'option_d']),
+				correct: q.correct === key,
+			}))
+		),
+		feedback: await renderLatex(q.feedback),
+	}))
+);
+---
+
+<div class="quiz" id="quiz">
+	<div class="quiz-progress">
+		<span>Pregunta <span id="quiz-current">1</span> / <span id="quiz-total">{rendered.length}</span></span>
+		<span class="quiz-score">Encerts: <span id="quiz-score">0</span></span>
+	</div>
+
+	<div class="quiz-body">
+		{rendered.map((q, i) => (
+			<div class="question" data-index={i} hidden>
+				<p class="statement" set:html={q.statement} />
+				<div class="options">
+					{q.options.map((opt) => (
+						<button type="button" class="option" data-correct={opt.correct ? 'true' : 'false'}>
+							<span class="option-letter" />
+							<span class="option-text" set:html={opt.text} />
+						</button>
+					))}
+				</div>
+				<div class="feedback" hidden set:html={q.feedback} />
+				<button type="button" class="next" hidden>Següent →</button>
+			</div>
+		))}
+	</div>
+
+	<div class="quiz-end" id="quiz-end" hidden>
+		<h2>Resultat</h2>
+		<p>Has encertat <strong id="quiz-final-score" /> de <strong>{rendered.length}</strong> preguntes.</p>
+		<button type="button" id="quiz-restart">Tornar a intentar</button>
+	</div>
+</div>
+
+<style>
+	.quiz {
+		max-width: 36rem;
+		margin: 0 auto;
+	}
+
+	.quiz-progress {
+		display: flex;
+		justify-content: space-between;
+		font-size: 0.9rem;
+		color: var(--text-muted);
+		margin-bottom: 1rem;
+	}
+
+	.quiz-score {
+		color: var(--text);
+		font-weight: 600;
+	}
+
+	.question {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.5rem;
+	}
+
+	.statement {
+		font-size: 1.1rem;
+		margin: 0 0 1.25rem;
+	}
+
+	.statement :global(.katex-display) {
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+
+	.options {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.option {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		text-align: left;
+		width: 100%;
+		background: var(--bg);
+		color: var(--text);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		padding: 0.75rem 1rem;
+		font-size: 1rem;
+		font-family: var(--font);
+		cursor: pointer;
+		transition: border-color 0.2s, background 0.2s;
+	}
+
+	.option:hover:not(:disabled) {
+		border-color: var(--accent);
+	}
+
+	.option-letter {
+		font-weight: 700;
+		color: var(--accent-strong);
+		flex-shrink: 0;
+	}
+
+	.option:disabled {
+		cursor: default;
+	}
+
+	.option.correct {
+		border-color: var(--success);
+		background: rgba(34, 197, 94, 0.12);
+	}
+
+	.option.incorrect {
+		border-color: #ef4444;
+		background: rgba(239, 68, 68, 0.12);
+	}
+
+	.feedback {
+		margin-top: 1.25rem;
+		padding: 1rem;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--text-muted);
+	}
+
+	.next {
+		display: block;
+		margin: 1.25rem 0 0 auto;
+		background: var(--accent);
+		color: #fff;
+		border: none;
+		border-radius: var(--radius-sm);
+		padding: 0.6rem 1.25rem;
+		font-size: 1rem;
+		cursor: pointer;
+	}
+
+	.quiz-end {
+		text-align: center;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 2rem 1.5rem;
+	}
+
+	#quiz-restart {
+		margin-top: 1rem;
+		background: var(--accent);
+		color: #fff;
+		border: none;
+		border-radius: var(--radius-sm);
+		padding: 0.6rem 1.25rem;
+		font-size: 1rem;
+		cursor: pointer;
+	}
+</style>
+
+<script>
+	function shuffle<T>(arr: T[]): T[] {
+		for (let i = arr.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[arr[i], arr[j]] = [arr[j], arr[i]];
+		}
+		return arr;
+	}
+
+	const quiz = document.getElementById('quiz')!;
+	const body = quiz.querySelector('.quiz-body') as HTMLElement;
+	const questions = Array.from(quiz.querySelectorAll<HTMLElement>('.question'));
+	const quizEnd = document.getElementById('quiz-end')!;
+	const currentEl = document.getElementById('quiz-current')!;
+	const scoreEl = document.getElementById('quiz-score')!;
+	const finalScoreEl = document.getElementById('quiz-final-score')!;
+	const restartBtn = document.getElementById('quiz-restart')!;
+
+	let order: number[] = [];
+	let pointer = 0;
+	let score = 0;
+
+	function setup() {
+		order = shuffle(questions.map((_, i) => i));
+		pointer = 0;
+		score = 0;
+		scoreEl.textContent = '0';
+		quizEnd.hidden = true;
+		body.hidden = false;
+
+		questions.forEach((q) => {
+			const options = shuffle(Array.from(q.querySelectorAll('.option')));
+			const optionsContainer = q.querySelector('.options')!;
+			options.forEach((opt, i) => {
+				optionsContainer.appendChild(opt);
+				opt.querySelector('.option-letter')!.textContent = `${String.fromCharCode(65 + i)})`;
+				opt.classList.remove('correct', 'incorrect');
+				(opt as HTMLButtonElement).disabled = false;
+			});
+			q.querySelector('.feedback')!.setAttribute('hidden', '');
+			q.querySelector('.next')!.setAttribute('hidden', '');
+			q.hidden = true;
+		});
+
+		showCurrent();
+	}
+
+	function showCurrent() {
+		questions.forEach((q) => (q.hidden = true));
+		const q = questions[order[pointer]];
+		q.hidden = false;
+		currentEl.textContent = String(pointer + 1);
+	}
+
+	function handleOptionClick(e: Event) {
+		const btn = e.currentTarget as HTMLButtonElement;
+		const question = btn.closest('.question')!;
+		const options = question.querySelectorAll<HTMLButtonElement>('.option');
+
+		options.forEach((opt) => {
+			opt.disabled = true;
+			if (opt.dataset.correct === 'true') opt.classList.add('correct');
+		});
+
+		if (btn.dataset.correct === 'true') {
+			score += 1;
+			scoreEl.textContent = String(score);
+		} else {
+			btn.classList.add('incorrect');
+		}
+
+		question.querySelector('.feedback')!.removeAttribute('hidden');
+		question.querySelector('.next')!.removeAttribute('hidden');
+	}
+
+	function handleNextClick() {
+		pointer += 1;
+		if (pointer >= order.length) {
+			body.hidden = true;
+			finalScoreEl.textContent = String(score);
+			quizEnd.hidden = false;
+		} else {
+			showCurrent();
+		}
+	}
+
+	questions.forEach((q) => {
+		q.querySelectorAll('.option').forEach((opt) => opt.addEventListener('click', handleOptionClick));
+		q.querySelector('.next')!.addEventListener('click', handleNextClick);
+	});
+
+	restartBtn.addEventListener('click', setup);
+
+	setup();
+</script>

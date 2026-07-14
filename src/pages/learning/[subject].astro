@@ -1,14 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { EXAM_SUBJECTS } from '../../data/examens';
-import { SUBJECT_TOPICS } from '../../data/subjects';
+import { getSubjectTopics } from '../../data/subjects';
 
 export async function getStaticPaths() {
 	return EXAM_SUBJECTS.map((subject) => ({ params: { subject: subject.slug }, props: { subject } }));
 }
 
 const { subject } = Astro.props;
-const topics = SUBJECT_TOPICS[subject.slug] ?? [];
+const topics = getSubjectTopics(subject.slug);
 ---
 
 <Base title={subject.label}>
@@ -23,12 +23,12 @@ const topics = SUBJECT_TOPICS[subject.slug] ?? [];
 
 		<section>
 			<h2>Qüestionaris</h2>
-			<p>5 qüestionaris per practicar cada tema.</p>
+			<p>5 qüestionaris per practicar cada tema, o el qüestionari complet amb totes les preguntes.</p>
+			<a class="link-card" href={`/learning/${subject.slug}/quiz`}>Fes el qüestionari complet →</a>
 			<ul class="topics">
 				{topics.map((topic) => (
 					<li>
-						<span>{topic}</span>
-						<span class="badge">Properament</span>
+						<a href={`/learning/${subject.slug}/quiz/${topic.slug}`}>{topic.label}</a>
 					</li>
 				))}
 			</ul>
@@ -46,13 +46,20 @@ const topics = SUBJECT_TOPICS[subject.slug] ?? [];
 	main {
 		max-width: 42rem;
 		margin: 0 auto;
-		padding: 1.5rem;
-		font-family: system-ui, sans-serif;
+		padding: 2rem 1.5rem;
 		line-height: 1.6;
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
 	}
 
 	section {
 		margin-bottom: 2.5rem;
+	}
+
+	section p {
+		color: var(--text-muted);
 	}
 
 	.link-card {
@@ -60,29 +67,35 @@ const topics = SUBJECT_TOPICS[subject.slug] ?? [];
 		margin-top: 0.5rem;
 		font-weight: 600;
 		text-decoration: none;
-		color: #1a1a2e;
+		color: var(--accent-strong);
+		transition: transform 0.2s;
+	}
+
+	.link-card:hover {
+		transform: translateX(3px);
 	}
 
 	.topics {
 		list-style: none;
 		padding: 0;
+		margin-top: 1rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
 	}
 
-	.topics li {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
+	.topics li a {
+		display: block;
 		padding: 0.75rem 1rem;
-		border: 1px solid #ddd;
-		border-radius: 0.5rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--text);
+		text-decoration: none;
+		transition: border-color 0.2s;
 	}
 
-	.badge {
-		font-size: 0.8rem;
-		color: #888;
-		font-style: italic;
+	.topics li a:hover {
+		border-color: var(--accent);
 	}
 </style>

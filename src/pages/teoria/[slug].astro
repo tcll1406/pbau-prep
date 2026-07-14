@@ -22,9 +22,19 @@ const { Content } = await render(entry);
 	main {
 		max-width: 42rem;
 		margin: 0 auto;
-		padding: 1.5rem;
-		font-family: system-ui, sans-serif;
+		padding: 2rem 1.5rem;
 		line-height: 1.6;
+	}
+
+	main :global(h1),
+	main :global(h2),
+	main :global(h3) {
+		letter-spacing: -0.01em;
+	}
+
+	main :global(hr) {
+		border: none;
+		border-top: 1px solid var(--border);
 	}
 
 	main :global(.katex-display) {
@@ -35,5 +45,15 @@ const { Content } = await render(entry);
 	main :global(img),
 	main :global(table) {
 		max-width: 100%;
+	}
+
+	main :global(table) {
+		border-collapse: collapse;
+	}
+
+	main :global(th),
+	main :global(td) {
+		border: 1px solid var(--border);
+		padding: 0.4rem 0.6rem;
 	}
 </style>

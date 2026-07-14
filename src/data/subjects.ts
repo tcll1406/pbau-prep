@@ -21,3 +21,16 @@ export const SUBJECT_TOPICS: Record<string, string[]> = {
 		'Anàlisi (Integrals i Àrees)',
 	],
 };
+
+export function slugifyTopic(topic: string): string {
+	return topic
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
+export function getSubjectTopics(subjectSlug: string): { label: string; slug: string }[] {
+	return (SUBJECT_TOPICS[subjectSlug] ?? []).map((label) => ({ label, slug: slugifyTopic(label) }));
+}

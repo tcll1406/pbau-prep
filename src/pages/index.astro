@@ -20,21 +20,21 @@ import Base from '../layouts/Base.astro';
 	main {
 		max-width: 42rem;
 		margin: 0 auto;
-		padding: 3rem 1.5rem;
-		font-family: system-ui, sans-serif;
+		padding: 5rem 1.5rem;
 		line-height: 1.6;
 		text-align: center;
 	}
 
 	h1 {
-		font-size: 2.5rem;
+		font-size: 3rem;
+		letter-spacing: -0.02em;
 		margin-bottom: 0.5rem;
 	}
 
 	.mission {
 		font-size: 1.25rem;
-		color: #444;
-		margin-bottom: 2rem;
+		color: var(--text-muted);
+		margin-bottom: 2.5rem;
 	}
 
 	.cta {
@@ -47,19 +47,33 @@ import Base from '../layouts/Base.astro';
 	.btn {
 		display: inline-block;
 		padding: 0.9rem 1.75rem;
-		border-radius: 0.5rem;
+		border-radius: var(--radius-sm);
 		text-decoration: none;
 		font-weight: 600;
 		font-size: 1.1rem;
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+
+	.btn:hover {
+		transform: translateY(-3px);
 	}
 
 	.btn-primary {
-		background: #1a1a2e;
+		background: var(--accent);
 		color: #fff;
 	}
 
+	.btn-primary:hover {
+		box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+	}
+
 	.btn-secondary {
-		background: #eee;
-		color: #1a1a2e;
+		background: var(--surface);
+		color: var(--text);
+		border: 1px solid var(--border);
+	}
+
+	.btn-secondary:hover {
+		background: var(--surface-hover);
 	}
 </style>
