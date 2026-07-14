@@ -1,17 +1,43 @@
 ---
-
+import { EXAM_SUBJECTS } from '../data/examens';
 ---
 
-<html lang="en">
+<html lang="ca">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>PBAU Prep</title>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<main>
+			<h1>PBAU Prep</h1>
+
+			<h2>Teoria</h2>
+			<ul>
+				{EXAM_SUBJECTS.map((s) => (
+					<li><a href={`/teoria/${s.slug}`}>{s.label}</a></li>
+				))}
+			</ul>
+
+			<h2>Exàmens anteriors</h2>
+			<ul>
+				{EXAM_SUBJECTS.map((s) => (
+					<li><a href={`/examens/${s.slug}`}>{s.label}</a></li>
+				))}
+			</ul>
+		</main>
 	</body>
 </html>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 1.5rem;
+		font-family: system-ui, sans-serif;
+		line-height: 1.6;
+	}
+</style>

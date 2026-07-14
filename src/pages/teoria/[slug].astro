@@ -1,9 +1,13 @@
 ---
-import { getEntry, render } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import 'katex/dist/katex.min.css';
 
-const entry = await getEntry('teoria', 'fisica');
-if (!entry) throw new Error('Missing teoria/fisica content entry');
+export async function getStaticPaths() {
+	const entries = await getCollection('teoria');
+	return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 
