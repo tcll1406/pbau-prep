@@ -1,0 +1,88 @@
+---
+import Base from '../../layouts/Base.astro';
+import { EXAM_SUBJECTS } from '../../data/examens';
+import { SUBJECT_TOPICS } from '../../data/subjects';
+
+export async function getStaticPaths() {
+	return EXAM_SUBJECTS.map((subject) => ({ params: { subject: subject.slug }, props: { subject } }));
+}
+
+const { subject } = Astro.props;
+const topics = SUBJECT_TOPICS[subject.slug] ?? [];
+---
+
+<Base title={subject.label}>
+	<main>
+		<h1>{subject.label}</h1>
+
+		<section>
+			<h2>Teoria</h2>
+			<p>Resum complet de la teoria, amb totes les fórmules i conceptes clau.</p>
+			<a class="link-card" href={`/teoria/${subject.slug}`}>Llegeix el resum complet →</a>
+		</section>
+
+		<section>
+			<h2>Qüestionaris</h2>
+			<p>5 qüestionaris per practicar cada tema.</p>
+			<ul class="topics">
+				{topics.map((topic) => (
+					<li>
+						<span>{topic}</span>
+						<span class="badge">Properament</span>
+					</li>
+				))}
+			</ul>
+		</section>
+
+		<section>
+			<h2>Exàmens anteriors</h2>
+			<p>Enunciats i criteris de correcció oficials de la UIB.</p>
+			<a class="link-card" href={`/examens/${subject.slug}`}>Veure els exàmens anteriors →</a>
+		</section>
+	</main>
+</Base>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 1.5rem;
+		font-family: system-ui, sans-serif;
+		line-height: 1.6;
+	}
+
+	section {
+		margin-bottom: 2.5rem;
+	}
+
+	.link-card {
+		display: inline-block;
+		margin-top: 0.5rem;
+		font-weight: 600;
+		text-decoration: none;
+		color: #1a1a2e;
+	}
+
+	.topics {
+		list-style: none;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.topics li {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 1rem;
+		border: 1px solid #ddd;
+		border-radius: 0.5rem;
+	}
+
+	.badge {
+		font-size: 0.8rem;
+		color: #888;
+		font-style: italic;
+	}
+</style>

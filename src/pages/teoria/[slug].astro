@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
 import 'katex/dist/katex.min.css';
 
 export async function getStaticPaths() {
@@ -11,18 +12,11 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 
-<html lang="ca">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>{entry.data.title} — PBAU Prep</title>
-	</head>
-	<body>
-		<main>
-			<Content />
-		</main>
-	</body>
-</html>
+<Base title={entry.data.title}>
+	<main>
+		<Content />
+	</main>
+</Base>
 
 <style>
 	main {

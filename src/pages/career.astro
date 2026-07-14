@@ -1,0 +1,430 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Career Hub">
+	<main>
+		<h1>Career Hub</h1>
+
+		<div class="layout">
+			<section class="calculator" aria-label="Calculadora de nota">
+				<h2>Calculadora de nota</h2>
+
+				<fieldset>
+					<legend>Fase General</legend>
+					<label>
+						Mitjana de Batxillerat
+						<input type="number" id="batx" min="0" max="10" step="0.01" />
+					</label>
+					<p class="hint">Nota dels 5 exercicis de la Fase General</p>
+					<div class="grid5">
+						<input type="number" class="exercici" min="0" max="10" step="0.01" aria-label="Exercici 1" placeholder="Ex. 1" />
+						<input type="number" class="exercici" min="0" max="10" step="0.01" aria-label="Exercici 2" placeholder="Ex. 2" />
+						<input type="number" class="exercici" min="0" max="10" step="0.01" aria-label="Exercici 3" placeholder="Ex. 3" />
+						<input type="number" class="exercici" min="0" max="10" step="0.01" aria-label="Exercici 4" placeholder="Ex. 4" />
+						<input type="number" class="exercici" min="0" max="10" step="0.01" aria-label="Exercici 5" placeholder="Ex. 5" />
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>Fase Específica (opcional, fins a 2 assignatures)</legend>
+					<div class="subject-row">
+						<input type="number" id="m1-grade" min="0" max="10" step="0.01" placeholder="Nota assignatura 1" />
+						<select id="m1-weight">
+							<option value="0.1">Pes 0.1</option>
+							<option value="0.2">Pes 0.2</option>
+						</select>
+					</div>
+					<div class="subject-row">
+						<input type="number" id="m2-grade" min="0" max="10" step="0.01" placeholder="Nota assignatura 2" />
+						<select id="m2-weight">
+							<option value="0.1">Pes 0.1</option>
+							<option value="0.2">Pes 0.2</option>
+						</select>
+					</div>
+				</fieldset>
+
+				<div class="results" id="results">
+					<div class="result-row">
+						<span>Nota d'accés</span>
+						<strong id="out-acces">—</strong>
+					</div>
+					<div class="result-row">
+						<span>Nota específica</span>
+						<strong id="out-especifica">—</strong>
+					</div>
+					<div class="result-row result-final" id="out-admissio-row">
+						<span>Nota d'admissió</span>
+						<strong id="out-admissio">—</strong>
+					</div>
+				</div>
+
+				<div class="target" id="target-box" hidden>
+					<span>Objectiu: <strong id="target-name"></strong></span>
+					<span>Nota de tall: <strong id="target-cutoff"></strong></span>
+					<button id="target-clear" type="button">Treure objectiu</button>
+				</div>
+			</section>
+
+			<section class="degrees" aria-label="Selector de graus">
+				<h2>Selector de graus</h2>
+				<p class="disclaimer">
+					La nota de tall canvia cada any segons la demanda de cada grau. Les notes d'anys
+					anteriors són només orientatives, no una garantia d'admissió.
+				</p>
+
+				<input type="search" id="degree-search" placeholder="Cerca un grau, universitat o ciutat…" />
+
+				<p class="hint" id="degree-status">Escriu per cercar entre els graus universitaris espanyols.</p>
+
+				<ul class="degree-list" id="degree-list"></ul>
+			</section>
+		</div>
+	</main>
+</Base>
+
+<style>
+	main {
+		max-width: 64rem;
+		margin: 0 auto;
+		padding: 1.5rem;
+		font-family: system-ui, sans-serif;
+		line-height: 1.6;
+	}
+
+	.layout {
+		display: grid;
+		grid-template-columns: 20rem 1fr;
+		gap: 2rem;
+		align-items: start;
+	}
+
+	@media (max-width: 48rem) {
+		.layout {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.calculator {
+		position: sticky;
+		top: 1rem;
+		border: 1px solid #ddd;
+		border-radius: 0.75rem;
+		padding: 1.25rem;
+	}
+
+	@media (max-width: 48rem) {
+		.calculator {
+			position: static;
+		}
+	}
+
+	fieldset {
+		border: none;
+		padding: 0;
+		margin: 0 0 1.25rem;
+	}
+
+	legend {
+		font-weight: 600;
+		padding: 0;
+		margin-bottom: 0.5rem;
+	}
+
+	label {
+		display: block;
+		font-size: 0.9rem;
+		margin-bottom: 0.75rem;
+	}
+
+	input,
+	select {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.5rem;
+		margin-top: 0.25rem;
+		border: 1px solid #ccc;
+		border-radius: 0.375rem;
+		font-size: 1rem;
+	}
+
+	.hint {
+		font-size: 0.8rem;
+		color: #666;
+		margin: 0 0 0.5rem;
+	}
+
+	.grid5 {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 0.4rem;
+	}
+
+	.grid5 input {
+		padding: 0.4rem 0.3rem;
+		font-size: 0.85rem;
+	}
+
+	.subject-row {
+		display: grid;
+		grid-template-columns: 1fr 7rem;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.subject-row input,
+	.subject-row select {
+		margin-top: 0;
+	}
+
+	.results {
+		border-top: 1px solid #ddd;
+		padding-top: 1rem;
+	}
+
+	.result-row {
+		display: flex;
+		justify-content: space-between;
+		padding: 0.35rem 0;
+	}
+
+	.result-final {
+		font-size: 1.2rem;
+		border-radius: 0.5rem;
+		padding: 0.5rem;
+		transition: background-color 0.2s;
+	}
+
+	.result-final.pass {
+		background: #d4f7dc;
+		box-shadow: 0 0 0 2px #34c759;
+	}
+
+	.target {
+		margin-top: 1rem;
+		padding-top: 1rem;
+		border-top: 1px solid #ddd;
+		font-size: 0.85rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	.target button {
+		width: auto;
+		align-self: flex-start;
+		background: #eee;
+		cursor: pointer;
+	}
+
+	.disclaimer {
+		font-size: 0.85rem;
+		background: #fff6db;
+		border: 1px solid #f0d97a;
+		border-radius: 0.5rem;
+		padding: 0.75rem;
+	}
+
+	.degree-list {
+		list-style: none;
+		padding: 0;
+		margin-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.degree-list li {
+		border: 1px solid #ddd;
+		border-radius: 0.5rem;
+		padding: 0.75rem 1rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.degree-info strong {
+		display: block;
+	}
+
+	.degree-info span {
+		font-size: 0.85rem;
+		color: #666;
+	}
+
+	.degree-cutoff {
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.degree-list button {
+		width: auto;
+		margin-top: 0.35rem;
+		background: #1a1a2e;
+		color: #fff;
+		border: none;
+		border-radius: 0.375rem;
+		padding: 0.35rem 0.75rem;
+		font-size: 0.8rem;
+		cursor: pointer;
+	}
+</style>
+
+<script>
+	interface Degree {
+		id: number;
+		name: string;
+		university: string;
+		city: string;
+		duration: number | null;
+		cutoff: number | null;
+	}
+
+	const batxInput = document.getElementById('batx') as HTMLInputElement;
+	const exerciciInputs = Array.from(document.querySelectorAll<HTMLInputElement>('.exercici'));
+	const m1Grade = document.getElementById('m1-grade') as HTMLInputElement;
+	const m1Weight = document.getElementById('m1-weight') as HTMLSelectElement;
+	const m2Grade = document.getElementById('m2-grade') as HTMLInputElement;
+	const m2Weight = document.getElementById('m2-weight') as HTMLSelectElement;
+
+	const outAcces = document.getElementById('out-acces')!;
+	const outEspecifica = document.getElementById('out-especifica')!;
+	const outAdmissio = document.getElementById('out-admissio')!;
+	const admissioRow = document.getElementById('out-admissio-row')!;
+
+	const targetBox = document.getElementById('target-box')!;
+	const targetName = document.getElementById('target-name')!;
+	const targetCutoffEl = document.getElementById('target-cutoff')!;
+	const targetClear = document.getElementById('target-clear')!;
+
+	let targetCutoff: number | null = null;
+
+	function num(input: HTMLInputElement): number {
+		const v = Number(input.value);
+		return Number.isFinite(v) ? v : 0;
+	}
+
+	function specificSubjectPoints(grade: number, weight: number): number {
+		return grade > 5 ? weight * grade : 0;
+	}
+
+	function compute() {
+		const batx = num(batxInput);
+		const exercicis = exerciciInputs.map(num);
+		const faseGeneral = exercicis.reduce((a, b) => a + b, 0) / exercicis.length;
+
+		const especifica =
+			specificSubjectPoints(num(m1Grade), Number(m1Weight.value)) +
+			specificSubjectPoints(num(m2Grade), Number(m2Weight.value));
+
+		outEspecifica.textContent = especifica.toFixed(3);
+
+		if (faseGeneral < 4) {
+			outAcces.textContent = "No vàlida (Fase General < 4)";
+			outAdmissio.textContent = '—';
+			admissioRow.classList.remove('pass');
+			return;
+		}
+
+		const accesRaw = 0.6 * batx + 0.4 * faseGeneral;
+		const acces = Math.min(10, Math.max(5, accesRaw));
+		const admissio = Math.min(14, acces + especifica);
+
+		outAcces.textContent = acces.toFixed(3);
+		outAdmissio.textContent = admissio.toFixed(3);
+
+		if (targetCutoff !== null && admissio >= targetCutoff) {
+			admissioRow.classList.add('pass');
+		} else {
+			admissioRow.classList.remove('pass');
+		}
+	}
+
+	[batxInput, ...exerciciInputs, m1Grade, m1Weight, m2Grade, m2Weight].forEach((el) =>
+		el.addEventListener('input', compute)
+	);
+	compute();
+
+	function setTarget(degree: Degree) {
+		if (degree.cutoff === null) return;
+		targetCutoff = degree.cutoff;
+		targetName.textContent = degree.name;
+		targetCutoffEl.textContent = degree.cutoff.toFixed(3);
+		targetBox.hidden = false;
+		compute();
+	}
+
+	targetClear.addEventListener('click', () => {
+		targetCutoff = null;
+		targetBox.hidden = true;
+		compute();
+	});
+
+	const searchInput = document.getElementById('degree-search') as HTMLInputElement;
+	const listEl = document.getElementById('degree-list')!;
+	const statusEl = document.getElementById('degree-status')!;
+
+	let degrees: Degree[] = [];
+
+	const MAX_RESULTS = 100;
+
+	function renderResults(query: string) {
+		listEl.innerHTML = '';
+
+		if (query.trim().length < 2) {
+			statusEl.textContent = 'Escriu per cercar entre els graus universitaris espanyols.';
+			return;
+		}
+
+		const q = query.trim().toLowerCase();
+		const matches = degrees.filter(
+			(d) =>
+				d.name.toLowerCase().includes(q) ||
+				d.university.toLowerCase().includes(q) ||
+				d.city.toLowerCase().includes(q)
+		);
+
+		statusEl.textContent = matches.length
+			? `${matches.length} resultat(s)${matches.length > MAX_RESULTS ? `, mostrant els primers ${MAX_RESULTS}` : ''}`
+			: 'Cap grau trobat.';
+
+		for (const d of matches.slice(0, MAX_RESULTS)) {
+			const li = document.createElement('li');
+
+			const info = document.createElement('div');
+			info.className = 'degree-info';
+			const name = document.createElement('strong');
+			name.textContent = d.name;
+			const meta = document.createElement('span');
+			meta.textContent = `${d.university} · ${d.city}`;
+			info.append(name, meta);
+
+			const cutoffBox = document.createElement('div');
+			cutoffBox.className = 'degree-cutoff';
+			cutoffBox.textContent = d.cutoff !== null ? `Nota de tall: ${d.cutoff.toFixed(3)}` : 'Sense dades';
+
+			if (d.cutoff !== null) {
+				const btn = document.createElement('button');
+				btn.type = 'button';
+				btn.textContent = 'Fixar com a objectiu';
+				btn.addEventListener('click', () => setTarget(d));
+				cutoffBox.appendChild(document.createElement('br'));
+				cutoffBox.appendChild(btn);
+			}
+
+			li.append(info, cutoffBox);
+			listEl.appendChild(li);
+		}
+	}
+
+	searchInput.addEventListener('input', () => renderResults(searchInput.value));
+
+	fetch('/data/degrees.json')
+		.then((res) => res.json())
+		.then((data: Degree[]) => {
+			degrees = data;
+			renderResults(searchInput.value);
+		});
+</script>

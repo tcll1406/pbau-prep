@@ -1,0 +1,45 @@
+---
+import Base from '../../layouts/Base.astro';
+import { EXAM_SUBJECTS } from '../../data/examens';
+---
+
+<Base title="Learning Hub">
+	<main>
+		<h1>Learning Hub</h1>
+		<p>Tria una assignatura per accedir a la teoria, els qüestionaris i els exàmens anteriors.</p>
+
+		<ul class="subjects">
+			{EXAM_SUBJECTS.map((s) => (
+				<li><a href={`/learning/${s.slug}`}>{s.label}</a></li>
+			))}
+		</ul>
+	</main>
+</Base>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 1.5rem;
+		font-family: system-ui, sans-serif;
+		line-height: 1.6;
+	}
+
+	.subjects {
+		list-style: none;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.subjects a {
+		display: block;
+		padding: 1rem 1.25rem;
+		border: 1px solid #ddd;
+		border-radius: 0.5rem;
+		text-decoration: none;
+		color: inherit;
+		font-weight: 600;
+	}
+</style>
