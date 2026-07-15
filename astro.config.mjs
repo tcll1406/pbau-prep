@@ -15,4 +15,9 @@ export default defineConfig({
 			rehypePlugins: [rehypeKatex],
 		}),
 	},
+	vite: {
+		// Keep every build script as an external /_astro/*.js file (none inlined),
+		// so a strict CSP script-src can be 'self' with no inline-script exceptions.
+		build: { assetsInlineLimit: 0 },
+	},
 });
