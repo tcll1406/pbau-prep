@@ -1,14 +1,39 @@
 ---
 import { renderLatex } from '../lib/render-latex';
 import type { Question } from '../lib/questions';
+import type { Lang } from '../data/i18n';
 import 'katex/dist/katex.min.css';
 
 interface Props {
 	questions: Question[];
 	manualInit?: boolean;
+	lang?: Lang;
 }
 
-const { questions, manualInit = false } = Astro.props;
+const { questions, manualInit = false, lang = 'ca' } = Astro.props;
+
+const T = {
+	ca: {
+		pregunta: 'Pregunta',
+		encerts: 'Encerts:',
+		next: 'Següent →',
+		result: 'Resultat',
+		restart: 'Tornar a intentar',
+		resultIntro: 'Has encertat',
+		resultOf: 'de',
+		resultSuffix: 'preguntes.',
+	},
+	es: {
+		pregunta: 'Pregunta',
+		encerts: 'Aciertos:',
+		next: 'Siguiente →',
+		result: 'Resultado',
+		restart: 'Volver a intentar',
+		resultIntro: 'Has acertado',
+		resultOf: 'de',
+		resultSuffix: 'preguntas.',
+	},
+}[lang];
 
 const rendered = await Promise.all(
 	questions.map(async (q) => ({
@@ -27,8 +52,8 @@ const rendered = await Promise.all(
 
 <div class="quiz" id="quiz" data-manual-init={manualInit ? 'true' : 'false'}>
 	<div class="quiz-progress">
-		<span>Pregunta <span id="quiz-current">1</span> / <span id="quiz-total">{rendered.length}</span></span>
-		<span class="quiz-score">Encerts: <span id="quiz-score">0</span></span>
+		<span>{T.pregunta} <span id="quiz-current">1</span> / <span id="quiz-total">{rendered.length}</span></span>
+		<span class="quiz-score">{T.encerts} <span id="quiz-score">0</span></span>
 	</div>
 
 	<div class="quiz-body">
@@ -44,15 +69,15 @@ const rendered = await Promise.all(
 					))}
 				</div>
 				<div class="feedback" hidden set:html={q.feedback} />
-				<button type="button" class="next" hidden>Següent →</button>
+				<button type="button" class="next" hidden>{T.next}</button>
 			</div>
 		))}
 	</div>
 
 	<div class="quiz-end" id="quiz-end" hidden>
-		<h2>Resultat</h2>
-		<p>Has encertat <strong id="quiz-final-score" /> de <strong>{rendered.length}</strong> preguntes.</p>
-		<button type="button" id="quiz-restart">Tornar a intentar</button>
+		<h2>{T.result}</h2>
+		<p>{T.resultIntro} <strong id="quiz-final-score" /> {T.resultOf} <strong>{rendered.length}</strong> {T.resultSuffix}</p>
+		<button type="button" id="quiz-restart">{T.restart}</button>
 	</div>
 </div>
 
@@ -256,7 +281,8 @@ const rendered = await Promise.all(
 		const { data } = await supabase.auth.getSession();
 		const userId = data.session?.user.id;
 		if (!userId) return;
-		await supabase.from('question_attempts').upsert({ user_id: userId, question_id: questionId, correct });
+		const { error } = await supabase.from('question_attempts').upsert({ user_id: userId, question_id: questionId, correct });
+		if (error) console.error('Failed to record quiz attempt:', error);
 	}
 
 	function handleOptionClick(e: Event) {

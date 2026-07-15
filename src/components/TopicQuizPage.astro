@@ -1,0 +1,58 @@
+---
+import Quiz from './Quiz.astro';
+import type { Lang } from '../data/i18n';
+import type { Question } from '../lib/questions';
+
+interface Props {
+	subject: { slug: string; label: { ca: string; es: string } };
+	topic: { label: string; slug: string };
+	questions: Question[];
+	lang: Lang;
+}
+
+const { subject, topic, questions, lang } = Astro.props;
+const p = lang === 'es' ? '/es' : '';
+
+const T = {
+	ca: { back: `← ${subject.label.ca}`, intro: (n: number) => `${n} preguntes sobre aquest tema, en ordre aleatori.` },
+	es: { back: `← ${subject.label.es}`, intro: (n: number) => `${n} preguntas sobre este tema, en orden aleatorio.` },
+}[lang];
+---
+
+<main>
+	<a class="back" href={`${p}/learning/${subject.slug}`}>{T.back}</a>
+	<h1>{topic.label}</h1>
+	<p class="intro">{T.intro(questions.length)}</p>
+
+	<Quiz questions={questions} lang={lang} />
+</main>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	.back {
+		display: inline-block;
+		margin-bottom: 1rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+
+	.back:hover {
+		color: var(--text);
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	.intro {
+		color: var(--text-muted);
+		margin-bottom: 2rem;
+	}
+</style>

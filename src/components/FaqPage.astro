@@ -1,0 +1,222 @@
+---
+import { FAQ_ITEMS } from '../data/faq';
+import type { Lang } from '../data/i18n';
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+const T = {
+	ca: {
+		title: 'Preguntes freqüents',
+		askTitle: 'No has trobat la resposta?',
+		loggedOutPrompt: 'Inicia sessió per fer-nos una pregunta directament.',
+		login: 'Inicia sessió',
+		questionLabel: 'La teva pregunta',
+		send: 'Enviar pregunta',
+		loginHref: '/login?redirect=/faq',
+	},
+	es: {
+		title: 'Preguntas frecuentes',
+		askTitle: '¿No has encontrado la respuesta?',
+		loggedOutPrompt: 'Inicia sesión para hacernos una pregunta directamente.',
+		login: 'Iniciar sesión',
+		questionLabel: 'Tu pregunta',
+		send: 'Enviar pregunta',
+		loginHref: '/es/login?redirect=/es/faq',
+	},
+}[lang];
+---
+
+<main>
+	<h1>{T.title}</h1>
+
+	<div class="accordion">
+		{FAQ_ITEMS[lang].map((item) => (
+			<details>
+				<summary>{item.question}</summary>
+				<p>{item.answer}</p>
+			</details>
+		))}
+	</div>
+
+	<section class="ask">
+		<h2>{T.askTitle}</h2>
+
+		<div id="ask-logged-out" class="prompt">
+			<p>{T.loggedOutPrompt}</p>
+			<a class="btn" href={T.loginHref} id="ask-login-link">{T.login}</a>
+		</div>
+
+		<form id="ask-form" class="prompt" hidden>
+			<label>
+				{T.questionLabel}
+				<textarea id="ask-question" rows="4" required></textarea>
+			</label>
+			<button type="submit" class="btn">{T.send}</button>
+			<p id="ask-status" class="status" hidden></p>
+		</form>
+	</section>
+</main>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	.accordion {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+	}
+
+	details {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		padding: 0.75rem 1rem;
+	}
+
+	summary {
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	details p {
+		margin-top: 0.75rem;
+		margin-bottom: 0;
+		color: var(--text-muted);
+	}
+
+	.ask {
+		margin-top: 2.5rem;
+	}
+
+	.ask h2 {
+		font-size: 1.3rem;
+	}
+
+	.prompt {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.5rem;
+	}
+
+	.prompt p {
+		color: var(--text-muted);
+		margin-top: 0;
+	}
+
+	label {
+		display: block;
+		font-size: 0.9rem;
+		color: var(--text-muted);
+		margin-bottom: 1rem;
+	}
+
+	textarea {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		margin-top: 0.35rem;
+		padding: 0.6rem;
+		background: var(--bg);
+		color: var(--text);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		font-family: var(--font);
+		font-size: 1rem;
+		resize: vertical;
+	}
+
+	textarea:focus {
+		outline: none;
+		border-color: var(--accent);
+		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
+	}
+
+	.btn {
+		display: inline-block;
+		background: var(--accent);
+		color: #fff;
+		border: none;
+		text-decoration: none;
+		border-radius: var(--radius-sm);
+		padding: 0.6rem 1.25rem;
+		font-size: 0.95rem;
+		font-weight: 600;
+		font-family: var(--font);
+		cursor: pointer;
+	}
+
+	.status {
+		margin: 1rem 0 0;
+		font-size: 0.9rem;
+	}
+
+	.status.success {
+		color: var(--success);
+	}
+
+	.status.error {
+		color: #ef4444;
+	}
+</style>
+
+<script>
+	import { supabase } from '../lib/supabase-client';
+
+	const STRINGS = {
+		ca: { error: 'Hi ha hagut un error. Torna-ho a provar.', success: 'Pregunta enviada! Et respondrem per correu.' },
+		es: { error: 'Ha habido un error. Vuelve a intentarlo.', success: 'Pregunta enviada. Te responderemos por correo.' },
+	}[location.pathname.startsWith('/es') ? 'es' : 'ca'];
+
+	const loggedOut = document.getElementById('ask-logged-out')!;
+	const form = document.getElementById('ask-form') as HTMLFormElement;
+	const questionInput = document.getElementById('ask-question') as HTMLTextAreaElement;
+	const statusEl = document.getElementById('ask-status')!;
+
+	async function refresh() {
+		const { data } = await supabase.auth.getSession();
+		const loggedIn = Boolean(data.session);
+		loggedOut.hidden = loggedIn;
+		form.hidden = !loggedIn;
+	}
+
+	refresh();
+	supabase.auth.onAuthStateChange(refresh);
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const { data } = await supabase.auth.getSession();
+		const session = data.session;
+		if (!session) return;
+
+		const { error } = await supabase.from('faq_questions').insert({
+			user_id: session.user.id,
+			email: session.user.email,
+			question: questionInput.value.trim(),
+		});
+
+		statusEl.hidden = false;
+		if (error) {
+			statusEl.textContent = STRINGS.error;
+			statusEl.className = 'status error';
+		} else {
+			statusEl.textContent = STRINGS.success;
+			statusEl.className = 'status success';
+			form.reset();
+		}
+	});
+</script>

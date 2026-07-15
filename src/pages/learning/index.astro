@@ -10,7 +10,10 @@ const SUBJECT_ICONS: Record<string, string> = {
 };
 ---
 
-<Base title="Learning Hub">
+<Base
+	title="Learning Hub"
+	description="Tria una assignatura — Física, Matemàtiques II o MACS II — i accedeix a la teoria, els qüestionaris i els exàmens anteriors."
+>
 	<main>
 		<h1>Learning Hub</h1>
 		<p>Tria una assignatura per accedir a la teoria, els qüestionaris i els exàmens anteriors.</p>
@@ -19,7 +22,7 @@ const SUBJECT_ICONS: Record<string, string> = {
 			{EXAM_SUBJECTS.map((s) => (
 				<a class="subject-card" href={`/learning/${s.slug}`}>
 					<span class="icon" set:html={SUBJECT_ICONS[s.slug]} />
-					<span class="label">{s.label}</span>
+					<span class="label">{s.label.ca}</span>
 				</a>
 			))}
 		</div>

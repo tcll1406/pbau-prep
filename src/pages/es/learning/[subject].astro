@@ -1,0 +1,19 @@
+---
+import Base from '../../../layouts/Base.astro';
+import LearningSubjectPage from '../../../components/LearningSubjectPage.astro';
+import { EXAM_SUBJECTS } from '../../../data/examens';
+
+export async function getStaticPaths() {
+	return EXAM_SUBJECTS.map((subject) => ({ params: { subject: subject.slug }, props: { subject } }));
+}
+
+const { subject } = Astro.props;
+---
+
+<Base
+	title={subject.label.es}
+	lang="es"
+	description={`Teoría, cuestionarios y exámenes anteriores de ${subject.label.es} para preparar la PAU.`}
+>
+	<LearningSubjectPage subject={subject} lang="es" />
+</Base>

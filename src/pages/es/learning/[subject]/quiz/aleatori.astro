@@ -1,0 +1,25 @@
+---
+import Base from '../../../../../layouts/Base.astro';
+import AleatoriQuizPage from '../../../../../components/AleatoriQuizPage.astro';
+import { EXAM_SUBJECTS } from '../../../../../data/examens';
+import { fetchQuestions } from '../../../../../lib/questions';
+
+export async function getStaticPaths() {
+	return Promise.all(
+		EXAM_SUBJECTS.map(async (subject) => ({
+			params: { subject: subject.slug },
+			props: { subject, questions: await fetchQuestions({ subject: subject.slug }, 'es') },
+		}))
+	);
+}
+
+const { subject, questions } = Astro.props;
+---
+
+<Base
+	title={`Cuestionario aleatorio — ${subject.label.es}`}
+	lang="es"
+	description={`10 preguntas al azar de todos los temas de ${subject.label.es}.`}
+>
+	<AleatoriQuizPage subject={subject} questions={questions} lang="es" />
+</Base>

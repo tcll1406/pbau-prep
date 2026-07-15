@@ -1,0 +1,135 @@
+---
+import { OFFICIAL_DOCS, getExamArchive } from '../data/examens';
+import type { Lang } from '../data/i18n';
+
+interface Props {
+	subject: { slug: string; label: { ca: string; es: string } };
+	lang: Lang;
+}
+
+const { subject, lang } = Astro.props;
+const archive = getExamArchive(subject.slug, lang);
+const officialDocs = OFFICIAL_DOCS[subject.slug] ?? [];
+
+const T = {
+	ca: { title: 'Exàmens anteriors', enunciat: 'Enunciat', criteris: 'Criteris', official: 'Documents oficials' },
+	es: { title: 'Exámenes anteriores', enunciat: 'Enunciado', criteris: 'Criterios', official: 'Documentos oficiales' },
+}[lang];
+---
+
+<main>
+	<h1>{T.title} — {subject.label[lang]}</h1>
+
+	<div class="years">
+		{archive.map((yearGroup) => (
+			<section class="year-card">
+				<h2>{yearGroup.year}</h2>
+				{yearGroup.convocatories.map((c) => (
+					<div class="convocatoria">
+						<span class="convocatoria-label">{c.label}</span>
+						<div class="doc-buttons">
+							<a class="doc-btn" href={c.enunciatUrl}>{T.enunciat}</a>
+							<a class="doc-btn" href={c.criterisUrl}>{T.criteris}</a>
+						</div>
+					</div>
+				))}
+			</section>
+		))}
+	</div>
+
+	<section class="year-card official">
+		<h2>{T.official}</h2>
+		<div class="doc-buttons wrap">
+			{officialDocs.map((doc) => (
+				<a class="doc-btn" href={doc.url}>{doc.label[lang]}</a>
+			))}
+		</div>
+	</section>
+</main>
+
+<style>
+	main {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	.years {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1rem;
+		margin-top: 1.5rem;
+	}
+
+	@media (max-width: 55rem) {
+		.years {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.year-card {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.25rem 1.5rem;
+	}
+
+	.year-card h2 {
+		margin-top: 0;
+	}
+
+	.official {
+		margin-top: 1.25rem;
+	}
+
+	.convocatoria {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.6rem 0;
+		border-top: 1px solid var(--border);
+	}
+
+	.convocatoria:first-of-type {
+		border-top: none;
+	}
+
+	.convocatoria-label {
+		color: var(--text-muted);
+		font-size: 0.9rem;
+	}
+
+	.doc-buttons {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.doc-buttons.wrap {
+		flex-wrap: wrap;
+	}
+
+	.doc-btn {
+		display: inline-block;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--text);
+		text-decoration: none;
+		font-size: 0.85rem;
+		font-weight: 600;
+		padding: 0.4rem 0.85rem;
+		transition: border-color 0.2s, background 0.2s, color 0.2s;
+	}
+
+	.doc-btn:hover {
+		border-color: var(--accent);
+		background: var(--accent);
+		color: #fff;
+	}
+</style>

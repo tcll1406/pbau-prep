@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import TeoriaPage from '../../../components/TeoriaPage.astro';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('teoria', (entry) => entry.id.startsWith('es/'));
+	return entries.map((entry) => ({ params: { slug: entry.id.slice(3) }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+---
+
+<Base
+	title={entry.data.title}
+	lang="es"
+	description={`Resumen de teoría de ${entry.data.title} con fórmulas y conceptos clave para la PAU.`}
+>
+	<TeoriaPage entry={entry} />
+</Base>

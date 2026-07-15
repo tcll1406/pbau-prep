@@ -26,10 +26,10 @@ const STEPS = [
 ];
 ---
 
-<Base title="PBAU Prep">
+<Base title="Prepara la PAU a les Illes Balears">
 	<section class="hero">
 		<div class="container">
-			<h1>Aconsegueix la teva millor nota a la PBAU</h1>
+			<h1>Aconsegueix la teva millor nota a la PAU</h1>
 			<p class="subtitle">
 				La plataforma dedicada exclusivament als estudiants de 2n de Batxillerat de les Illes
 				Balears. Prepara't amb materials especialitzats, exàmens reals i eines de càlcul per
@@ -95,8 +95,11 @@ const STEPS = [
 
 	<footer>
 		<div class="container footer-inner">
-			<span class="brand">PBAU Prep</span>
-			<span class="copyright">© 2026 PBAU Prep. Tots els drets reservats.</span>
+			<span class="brand">
+				<img src="/favicon.png" alt="" class="brand-icon" />
+				PAU Balears Prep
+			</span>
+			<span class="copyright">© 2026 PAU Balears Prep. Tots els drets reservats.</span>
 		</div>
 	</footer>
 </Base>
@@ -323,7 +326,16 @@ const STEPS = [
 	}
 
 	.footer-inner .brand {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		font-weight: 700;
+	}
+
+	.footer-inner .brand-icon {
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: var(--radius-sm);
 	}
 
 	.footer-inner .copyright {

@@ -1,6 +1,6 @@
 ---
 import Base from '../../../../layouts/Base.astro';
-import Quiz from '../../../../components/Quiz.astro';
+import TopicQuizPage from '../../../../components/TopicQuizPage.astro';
 import { EXAM_SUBJECTS } from '../../../../data/examens';
 import { getSubjectTopics } from '../../../../data/subjects';
 import { fetchQuestions } from '../../../../lib/questions';
@@ -8,13 +8,13 @@ import { fetchQuestions } from '../../../../lib/questions';
 export async function getStaticPaths() {
 	const paths = [];
 	for (const subject of EXAM_SUBJECTS) {
-		for (const topic of getSubjectTopics(subject.slug)) {
+		for (const topic of getSubjectTopics(subject.slug, 'ca')) {
 			paths.push({
 				params: { subject: subject.slug, topic: topic.slug },
 				props: {
 					subject,
 					topic,
-					questions: await fetchQuestions({ subject: subject.slug, topic: topic.label }),
+					questions: await fetchQuestions({ subject: subject.slug, topic: topic.caLabel }, 'ca'),
 				},
 			});
 		}
@@ -25,42 +25,9 @@ export async function getStaticPaths() {
 const { subject, topic, questions } = Astro.props;
 ---
 
-<Base title={`${topic.label} — ${subject.label}`}>
-	<main>
-		<a class="back" href={`/learning/${subject.slug}`}>← {subject.label}</a>
-		<h1>{topic.label}</h1>
-		<p class="intro">{questions.length} preguntes sobre aquest tema, en ordre aleatori.</p>
-
-		<Quiz questions={questions} />
-	</main>
+<Base
+	title={`${topic.label} — ${subject.label.ca}`}
+	description={`10 preguntes sobre ${topic.label} (${subject.label.ca}) amb correcció instantània i explicacions.`}
+>
+	<TopicQuizPage subject={subject} topic={topic} questions={questions} lang="ca" />
 </Base>
-
-<style>
-	main {
-		max-width: 42rem;
-		margin: 0 auto;
-		padding: 2rem 1.5rem;
-		line-height: 1.6;
-	}
-
-	.back {
-		display: inline-block;
-		margin-bottom: 1rem;
-		color: var(--text-muted);
-		text-decoration: none;
-		font-size: 0.9rem;
-	}
-
-	.back:hover {
-		color: var(--text);
-	}
-
-	h1 {
-		letter-spacing: -0.02em;
-	}
-
-	.intro {
-		color: var(--text-muted);
-		margin-bottom: 2rem;
-	}
-</style>

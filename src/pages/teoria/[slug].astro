@@ -1,59 +1,19 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import 'katex/dist/katex.min.css';
+import TeoriaPage from '../../components/TeoriaPage.astro';
 
 export async function getStaticPaths() {
-	const entries = await getCollection('teoria');
+	const entries = await getCollection('teoria', (entry) => !entry.id.startsWith('es/'));
 	return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
 ---
 
-<Base title={entry.data.title}>
-	<main>
-		<Content />
-	</main>
+<Base
+	title={entry.data.title}
+	description={`Resum de teoria de ${entry.data.title} amb fórmules i conceptes clau per a la PAU.`}
+>
+	<TeoriaPage entry={entry} />
 </Base>
-
-<style>
-	main {
-		max-width: 42rem;
-		margin: 0 auto;
-		padding: 2rem 1.5rem;
-		line-height: 1.6;
-	}
-
-	main :global(h1),
-	main :global(h2),
-	main :global(h3) {
-		letter-spacing: -0.01em;
-	}
-
-	main :global(hr) {
-		border: none;
-		border-top: 1px solid var(--border);
-	}
-
-	main :global(.katex-display) {
-		overflow-x: auto;
-		overflow-y: hidden;
-	}
-
-	main :global(img),
-	main :global(table) {
-		max-width: 100%;
-	}
-
-	main :global(table) {
-		border-collapse: collapse;
-	}
-
-	main :global(th),
-	main :global(td) {
-		border: 1px solid var(--border);
-		padding: 0.4rem 0.6rem;
-	}
-</style>

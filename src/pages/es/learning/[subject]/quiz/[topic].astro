@@ -1,0 +1,34 @@
+---
+import Base from '../../../../../layouts/Base.astro';
+import TopicQuizPage from '../../../../../components/TopicQuizPage.astro';
+import { EXAM_SUBJECTS } from '../../../../../data/examens';
+import { getSubjectTopics } from '../../../../../data/subjects';
+import { fetchQuestions } from '../../../../../lib/questions';
+
+export async function getStaticPaths() {
+	const paths = [];
+	for (const subject of EXAM_SUBJECTS) {
+		for (const topic of getSubjectTopics(subject.slug, 'es')) {
+			paths.push({
+				params: { subject: subject.slug, topic: topic.slug },
+				props: {
+					subject,
+					topic,
+					questions: await fetchQuestions({ subject: subject.slug, topic: topic.caLabel }, 'es'),
+				},
+			});
+		}
+	}
+	return paths;
+}
+
+const { subject, topic, questions } = Astro.props;
+---
+
+<Base
+	title={`${topic.label} — ${subject.label.es}`}
+	lang="es"
+	description={`10 preguntas sobre ${topic.label} (${subject.label.es}) con corrección instantánea y explicaciones.`}
+>
+	<TopicQuizPage subject={subject} topic={topic} questions={questions} lang="es" />
+</Base>

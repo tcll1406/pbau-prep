@@ -1,0 +1,213 @@
+---
+import Base from '../../layouts/Base.astro';
+import { TIPS } from '../../data/tips';
+---
+
+<Base
+	title="Sobre nosotros"
+	lang="es"
+	description="La misión de PAU Balears Prep, quién está detrás del proyecto y cómo ayudamos a los estudiantes de las Islas Baleares a preparar la PAU."
+>
+	<main>
+		<h1>Sobre nosotros</h1>
+
+		<p>
+			La misión de PAU Balears Prep es ayudar a los estudiantes de bachillerato de las Islas
+			Baleares a conseguir las mejores notas posibles en la PAU y alcanzar la nota necesaria para
+			acceder a los estudios que quieren.
+		</p>
+
+		<section class="author">
+			<p class="author-eyebrow">Conoce al fundador</p>
+			<div class="author-header">
+				<img src="/antoni-colom.png" alt="Antoni Colom Lladó" class="author-photo" />
+				<div class="author-info">
+					<span class="author-name">Antoni Colom Lladó</span>
+					<a
+						class="author-linkedin"
+						href="https://www.linkedin.com/in/antoni-colom-lladó-120456352"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						LinkedIn
+					</a>
+				</div>
+			</div>
+			<p>
+				Soy estudiante de tercer curso de Tecnologías Industriales y Análisis Económico, con una
+				fuerte voluntad de aprender y crecer tanto a nivel académico como personal. Soy curioso,
+				adaptable y tengo un interés especial por la tecnología, las finanzas y la consultoría
+				estratégica.
+			</p>
+			<p>
+				Fuera de los estudios, me apasiona el deporte. Entrenar natación, ciclismo y running me ha
+				enseñado disciplina, perseverancia y la capacidad de fijarme objetivos, valores que quiero
+				llevar también a mi trayectoria profesional.
+			</p>
+		</section>
+
+		<p>
+			La plataforma va más allá del estudio tradicional, ofreciendo a los estudiantes una ventaja
+			estratégica a través de tres objetivos clave:
+		</p>
+
+		<section class="objective">
+			<h2>Desmitificar el proceso</h2>
+			<p>
+				Ofrecemos una guía clara y práctica sobre el formato de la PAU, los plazos administrativos
+				y los criterios de corrección más complejos (como la ponderación 60/40 y los
+				multiplicadores de la fase de admisión).
+			</p>
+		</section>
+
+		<section class="objective">
+			<h2>Planificación estratégica</h2>
+			<p>
+				El Career Hub, con la Calculadora de Nota y el Selector de Grados, permite a los
+				estudiantes saber exactamente qué nota deben alcanzar para llegar a la nota de corte del
+				grado que quieren.
+			</p>
+		</section>
+
+		<section class="objective">
+			<h2>Dominio académico focalizado</h2>
+			<p>
+				El Learning Hub ofrece resúmenes de teoría concisos, más de 150 cuestionarios interactivos
+				de autoevaluación y acceso directo a los exámenes oficiales anteriores, en un entorno
+				estructurado y sin distracciones.
+			</p>
+		</section>
+
+		<section id="tips" class="tips-section">
+			<h2>Tips para triunfar</h2>
+			<p class="tips-intro">Consejos de un antiguo estudiante de Bachillerato que pasó por la PAU.</p>
+
+			<div class="tips-grid">
+				{TIPS.es.map((tip) => (
+					<article class="tip-card">
+						<span class="tip-category">{tip.category}</span>
+						<h3>{tip.title}</h3>
+						<p>{tip.content}</p>
+					</article>
+				))}
+			</div>
+		</section>
+	</main>
+</Base>
+
+<style>
+	main {
+		max-width: 64rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	main > p {
+		color: var(--text-muted);
+	}
+
+	section {
+		margin-top: 2rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.25rem 1.5rem;
+	}
+
+	section p {
+		color: var(--text-muted);
+	}
+
+	.objective h2 {
+		font-size: 1.2rem;
+	}
+
+	.tips-intro {
+		margin-top: 0;
+	}
+
+	.tips-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+		gap: 1rem;
+		margin-top: 1.5rem;
+	}
+
+	.tip-card {
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		padding: 1.25rem;
+	}
+
+	.tip-category {
+		display: inline-block;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: var(--gold);
+		margin-bottom: 0.5rem;
+	}
+
+	.tip-card h3 {
+		margin: 0 0 0.5rem;
+		font-size: 1.05rem;
+	}
+
+	.tip-card p {
+		margin: 0;
+		font-size: 0.9rem;
+	}
+
+	.author-eyebrow {
+		margin: 0 0 1rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: var(--gold);
+	}
+
+	.author-header {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.author-photo {
+		width: 3.5rem;
+		height: 3.5rem;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+	}
+
+	.author-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.author-name {
+		font-weight: 700;
+		color: var(--text);
+	}
+
+	.author-linkedin {
+		font-size: 0.9rem;
+		color: var(--accent-strong);
+		text-decoration: none;
+		width: fit-content;
+	}
+
+	.author-linkedin:hover {
+		text-decoration: underline;
+	}
+</style>

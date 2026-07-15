@@ -1,0 +1,19 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ExamensPage from '../../../components/ExamensPage.astro';
+import { EXAM_SUBJECTS } from '../../../data/examens';
+
+export async function getStaticPaths() {
+	return EXAM_SUBJECTS.map((subject) => ({ params: { subject: subject.slug }, props: { subject } }));
+}
+
+const { subject } = Astro.props;
+---
+
+<Base
+	title={`Exámenes anteriores — ${subject.label.es}`}
+	lang="es"
+	description={`Enunciados y criterios de corrección oficiales de la UIB para ${subject.label.es}, organizados por año y convocatoria.`}
+>
+	<ExamensPage subject={subject} lang="es" />
+</Base>

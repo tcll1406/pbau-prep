@@ -1,0 +1,19 @@
+---
+import Base from '../../../../../layouts/Base.astro';
+import QuizIndexPage from '../../../../../components/QuizIndexPage.astro';
+import { EXAM_SUBJECTS } from '../../../../../data/examens';
+
+export async function getStaticPaths() {
+	return EXAM_SUBJECTS.map((subject) => ({ params: { subject: subject.slug }, props: { subject } }));
+}
+
+const { subject } = Astro.props;
+---
+
+<Base
+	title={`Cuestionarios — ${subject.label.es}`}
+	lang="es"
+	description={`Practica ${subject.label.es} por tema, al azar, o repasa tu test de errores.`}
+>
+	<QuizIndexPage subject={subject} lang="es" />
+</Base>

@@ -1,109 +1,18 @@
 ---
 import Base from '../../layouts/Base.astro';
+import LearningSubjectPage from '../../components/LearningSubjectPage.astro';
 import { EXAM_SUBJECTS } from '../../data/examens';
-import { ICONS } from '../../data/icons';
 
 export async function getStaticPaths() {
 	return EXAM_SUBJECTS.map((subject) => ({ params: { subject: subject.slug }, props: { subject } }));
 }
 
 const { subject } = Astro.props;
-
-const SECTIONS = [
-	{
-		href: `/teoria/${subject.slug}`,
-		icon: ICONS.book,
-		title: 'Teoria',
-		desc: 'Resum complet amb totes les fórmules i conceptes clau.',
-	},
-	{
-		href: `/learning/${subject.slug}/quiz`,
-		icon: ICONS.quiz,
-		title: 'Qüestionaris',
-		desc: 'Practica per tema, a l\'atzar, o repassa el teu test d\'errors.',
-	},
-	{
-		href: `/examens/${subject.slug}`,
-		icon: ICONS.document,
-		title: 'Exàmens anteriors',
-		desc: 'Enunciats i criteris de correcció oficials de la UIB.',
-	},
-];
 ---
 
-<Base title={subject.label}>
-	<main>
-		<h1>{subject.label}</h1>
-
-		<div class="sections">
-			{SECTIONS.map((s) => (
-				<a class="widget" href={s.href}>
-					<span class="icon" set:html={s.icon} />
-					<span class="widget-title">{s.title}</span>
-					<span class="widget-desc">{s.desc}</span>
-				</a>
-			))}
-		</div>
-	</main>
+<Base
+	title={subject.label.ca}
+	description={`Teoria, qüestionaris i exàmens anteriors de ${subject.label.ca} per preparar la PAU.`}
+>
+	<LearningSubjectPage subject={subject} lang="ca" />
 </Base>
-
-<style>
-	main {
-		max-width: 72rem;
-		margin: 0 auto;
-		padding: 2rem 1.5rem;
-		line-height: 1.6;
-	}
-
-	h1 {
-		letter-spacing: -0.02em;
-	}
-
-	.sections {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1rem;
-		margin-top: 1.5rem;
-	}
-
-	@media (max-width: 48rem) {
-		.sections {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	.widget {
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-		padding: 1.75rem;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		text-decoration: none;
-		color: var(--text);
-		transition: transform 0.2s, background 0.2s;
-	}
-
-	.widget:hover {
-		background: var(--surface-hover);
-		transform: translateY(-4px);
-	}
-
-	.widget .icon {
-		width: 2rem;
-		height: 2rem;
-		color: var(--accent-strong);
-	}
-
-	.widget-title {
-		font-weight: 700;
-		font-size: 1.1rem;
-	}
-
-	.widget-desc {
-		color: var(--text-muted);
-		font-size: 0.9rem;
-		line-height: 1.5;
-	}
-</style>

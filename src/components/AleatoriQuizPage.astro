@@ -1,0 +1,77 @@
+---
+import Quiz from './Quiz.astro';
+import type { Lang } from '../data/i18n';
+import type { Question } from '../lib/questions';
+
+interface Props {
+	subject: { slug: string; label: { ca: string; es: string } };
+	questions: Question[];
+	lang: Lang;
+}
+
+const { subject, questions, lang } = Astro.props;
+const p = lang === 'es' ? '/es' : '';
+
+const T = {
+	ca: {
+		back: `← ${subject.label.ca}`,
+		title: 'Qüestionari aleatori',
+		intro: `10 preguntes triades a l'atzar d'entre totes les de ${subject.label.ca}.`,
+	},
+	es: {
+		back: `← ${subject.label.es}`,
+		title: 'Cuestionario aleatorio',
+		intro: `10 preguntas elegidas al azar entre todas las de ${subject.label.es}.`,
+	},
+}[lang];
+---
+
+<main>
+	<a class="back" href={`${p}/learning/${subject.slug}/quiz`}>{T.back}</a>
+	<h1>{T.title}</h1>
+	<p class="intro">{T.intro}</p>
+
+	<Quiz questions={questions} manualInit={true} lang={lang} />
+</main>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	.back {
+		display: inline-block;
+		margin-bottom: 1rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+
+	.back:hover {
+		color: var(--text);
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	.intro {
+		color: var(--text-muted);
+		margin-bottom: 2rem;
+	}
+</style>
+
+<script>
+	import { applyQuizFilter, getAllRenderedQuestionIds } from '../lib/quiz-filter-client';
+
+	const ids = getAllRenderedQuestionIds();
+	for (let i = ids.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[ids[i], ids[j]] = [ids[j], ids[i]];
+	}
+
+	applyQuizFilter(new Set(ids.slice(0, 10)));
+</script>

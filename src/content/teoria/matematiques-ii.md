@@ -2,7 +2,7 @@
 title: Matemàtiques II
 ---
 
-# MATEMÀTIQUES II - RESUM PBAU (UIB)
+# MATEMÀTIQUES II - RESUM PAU (UIB)
 
 ## 1. ÀLGEBRA LINEAL (Matrius i Sistemes)
 

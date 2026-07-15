@@ -1,0 +1,112 @@
+---
+import { ICONS } from '../data/icons';
+import type { Lang } from '../data/i18n';
+
+interface Props {
+	subject: { slug: string; label: { ca: string; es: string } };
+	lang: Lang;
+}
+
+const { subject, lang } = Astro.props;
+const p = lang === 'es' ? '/es' : '';
+
+const T = {
+	ca: {
+		teoria: 'Teoria',
+		teoriaDesc: 'Resum complet amb totes les fórmules i conceptes clau.',
+		questionaris: 'Qüestionaris',
+		questionarisDesc: "Practica per tema, a l'atzar, o repassa el teu test d'errors.",
+		examens: 'Exàmens anteriors',
+		examensDesc: 'Enunciats i criteris de correcció oficials de la UIB.',
+	},
+	es: {
+		teoria: 'Teoría',
+		teoriaDesc: 'Resumen completo con todas las fórmulas y conceptos clave.',
+		questionaris: 'Cuestionarios',
+		questionarisDesc: 'Practica por tema, al azar, o repasa tu test de errores.',
+		examens: 'Exámenes anteriores',
+		examensDesc: 'Enunciados y criterios de corrección oficiales de la UIB.',
+	},
+}[lang];
+
+const SECTIONS = [
+	{ href: `${p}/teoria/${subject.slug}`, icon: ICONS.book, title: T.teoria, desc: T.teoriaDesc },
+	{ href: `${p}/learning/${subject.slug}/quiz`, icon: ICONS.quiz, title: T.questionaris, desc: T.questionarisDesc },
+	{ href: `${p}/examens/${subject.slug}`, icon: ICONS.document, title: T.examens, desc: T.examensDesc },
+];
+---
+
+<main>
+	<h1>{subject.label[lang]}</h1>
+
+	<div class="sections">
+		{SECTIONS.map((s) => (
+			<a class="widget" href={s.href}>
+				<span class="icon" set:html={s.icon} />
+				<span class="widget-title">{s.title}</span>
+				<span class="widget-desc">{s.desc}</span>
+			</a>
+		))}
+	</div>
+</main>
+
+<style>
+	main {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	.sections {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1rem;
+		margin-top: 1.5rem;
+	}
+
+	@media (max-width: 48rem) {
+		.sections {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.widget {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		padding: 1.75rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		text-decoration: none;
+		color: var(--text);
+		transition: transform 0.2s, background 0.2s;
+	}
+
+	.widget:hover {
+		background: var(--surface-hover);
+		transform: translateY(-4px);
+	}
+
+	.widget .icon {
+		width: 2rem;
+		height: 2rem;
+		color: var(--accent-strong);
+	}
+
+	.widget-title {
+		font-weight: 700;
+		font-size: 1.1rem;
+	}
+
+	.widget-desc {
+		color: var(--text-muted);
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+</style>

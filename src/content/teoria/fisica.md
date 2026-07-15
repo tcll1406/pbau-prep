@@ -2,7 +2,7 @@
 title: Física
 ---
 
-# FÍSICA - RESUM COMPLET PBAU (UIB)
+# FÍSICA - RESUM COMPLET PAU (UIB)
 
 ## ⚠️ REGLES D'OR DE LA UIB PER A L'EXAMEN DE FÍSICA
 1. **Justifica-ho tot:** Fes servir frases curtes connectores (ex: "Aplicant el principi de conservació de l'energia mecànica..." o "Per la tercera llei de Kepler..."). Una fórmula aïllada sense text pot suposar un 0.

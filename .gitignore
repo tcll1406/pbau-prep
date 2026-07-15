@@ -24,3 +24,10 @@ venv/
 
 # Local Netlify folder
 .netlify
+
+# Raw source data — processed output is committed instead (see CLAUDE.md §4)
+/PBAUPrepFiles/
+/notas_de_corte.json
+/FQA.json
+/tips.json
+/style.json

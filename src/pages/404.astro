@@ -1,0 +1,89 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Pàgina no trobada" description="Aquesta pàgina no existeix. Torna a l'inici de PAU Balears Prep.">
+	<main>
+		<p class="code">404</p>
+		<h1 id="not-found-title">Vaja, aquesta pàgina no existeix</h1>
+		<p id="not-found-text">Potser l'enllaç ha canviat o s'ha escrit malament.</p>
+
+		<div class="cta">
+			<a class="btn btn-primary" href="/" id="home-link">Torna a l'inici</a>
+			<a class="btn btn-secondary" href="/learning" id="learning-link">Learning Hub</a>
+			<a class="btn btn-secondary" href="/career" id="career-link">Career Hub</a>
+		</div>
+	</main>
+</Base>
+
+<style>
+	main {
+		max-width: 32rem;
+		margin: 0 auto;
+		padding: 6rem 1.5rem;
+		text-align: center;
+	}
+
+	.code {
+		font-size: 4rem;
+		font-weight: 800;
+		color: var(--accent-strong);
+		margin: 0;
+		line-height: 1;
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+		margin: 0.5rem 0 0.75rem;
+	}
+
+	main > p:not(.code) {
+		color: var(--text-muted);
+		margin-bottom: 2rem;
+	}
+
+	.cta {
+		display: flex;
+		gap: 0.75rem;
+		justify-content: center;
+		flex-wrap: wrap;
+	}
+
+	.btn {
+		display: inline-block;
+		padding: 0.7rem 1.4rem;
+		border-radius: var(--radius-sm);
+		text-decoration: none;
+		font-weight: 600;
+		transition: transform 0.2s;
+	}
+
+	.btn:hover {
+		transform: translateY(-3px);
+	}
+
+	.btn-primary {
+		background: var(--accent);
+		color: #fff;
+	}
+
+	.btn-secondary {
+		background: var(--surface);
+		color: var(--text);
+		border: 1px solid var(--border);
+	}
+</style>
+
+<script>
+	if (location.pathname.startsWith('/es')) {
+		document.documentElement.lang = 'es';
+		document.getElementById('not-found-title')!.textContent = 'Vaya, esta página no existe';
+		document.getElementById('not-found-text')!.textContent = 'Puede que el enlace haya cambiado o esté mal escrito.';
+		document.getElementById('home-link')!.textContent = 'Volver al inicio';
+		(document.getElementById('home-link') as HTMLAnchorElement).href = '/es';
+		document.getElementById('learning-link')!.textContent = 'Learning Hub';
+		(document.getElementById('learning-link') as HTMLAnchorElement).href = '/es/learning';
+		document.getElementById('career-link')!.textContent = 'Career Hub';
+		(document.getElementById('career-link') as HTMLAnchorElement).href = '/es/career';
+	}
+</script>

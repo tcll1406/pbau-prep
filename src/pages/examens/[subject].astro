@@ -1,131 +1,18 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { EXAM_SUBJECTS, OFFICIAL_DOCS, getExamArchive } from '../../data/examens';
+import ExamensPage from '../../components/ExamensPage.astro';
+import { EXAM_SUBJECTS } from '../../data/examens';
 
 export async function getStaticPaths() {
 	return EXAM_SUBJECTS.map((subject) => ({ params: { subject: subject.slug }, props: { subject } }));
 }
 
 const { subject } = Astro.props;
-const archive = getExamArchive(subject.slug);
-const officialDocs = OFFICIAL_DOCS[subject.slug] ?? [];
 ---
 
-<Base title={`Exàmens anteriors — ${subject.label}`}>
-	<main>
-		<h1>Exàmens anteriors — {subject.label}</h1>
-
-		<div class="years">
-			{archive.map((yearGroup) => (
-				<section class="year-card">
-					<h2>{yearGroup.year}</h2>
-					{yearGroup.convocatories.map((c) => (
-						<div class="convocatoria">
-							<span class="convocatoria-label">{c.label}</span>
-							<div class="doc-buttons">
-								<a class="doc-btn" href={c.enunciatUrl}>Enunciat</a>
-								<a class="doc-btn" href={c.criterisUrl}>Criteris</a>
-							</div>
-						</div>
-					))}
-				</section>
-			))}
-		</div>
-
-		<section class="year-card official">
-			<h2>Documents oficials</h2>
-			<div class="doc-buttons wrap">
-				{officialDocs.map((doc) => (
-					<a class="doc-btn" href={doc.url}>{doc.label}</a>
-				))}
-			</div>
-		</section>
-	</main>
+<Base
+	title={`Exàmens anteriors — ${subject.label.ca}`}
+	description={`Enunciats i criteris de correcció oficials de la UIB per a ${subject.label.ca}, organitzats per any i convocatòria.`}
+>
+	<ExamensPage subject={subject} lang="ca" />
 </Base>
-
-<style>
-	main {
-		max-width: 72rem;
-		margin: 0 auto;
-		padding: 2rem 1.5rem;
-		line-height: 1.6;
-	}
-
-	h1 {
-		letter-spacing: -0.02em;
-	}
-
-	.years {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1rem;
-		margin-top: 1.5rem;
-	}
-
-	@media (max-width: 55rem) {
-		.years {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	.year-card {
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		padding: 1.25rem 1.5rem;
-	}
-
-	.year-card h2 {
-		margin-top: 0;
-	}
-
-	.official {
-		margin-top: 1.25rem;
-	}
-
-	.convocatoria {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 0.6rem 0;
-		border-top: 1px solid var(--border);
-	}
-
-	.convocatoria:first-of-type {
-		border-top: none;
-	}
-
-	.convocatoria-label {
-		color: var(--text-muted);
-		font-size: 0.9rem;
-	}
-
-	.doc-buttons {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.doc-buttons.wrap {
-		flex-wrap: wrap;
-	}
-
-	.doc-btn {
-		display: inline-block;
-		background: var(--bg);
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		color: var(--text);
-		text-decoration: none;
-		font-size: 0.85rem;
-		font-weight: 600;
-		padding: 0.4rem 0.85rem;
-		transition: border-color 0.2s, background 0.2s, color 0.2s;
-	}
-
-	.doc-btn:hover {
-		border-color: var(--accent);
-		background: var(--accent);
-		color: #fff;
-	}
-</style>

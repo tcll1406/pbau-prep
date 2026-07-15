@@ -1,0 +1,204 @@
+---
+import { ICONS } from '../data/icons';
+import { getSubjectTopics } from '../data/subjects';
+import type { Lang } from '../data/i18n';
+
+interface Props {
+	subject: { slug: string; label: { ca: string; es: string } };
+	lang: Lang;
+}
+
+const { subject, lang } = Astro.props;
+const p = lang === 'es' ? '/es' : '';
+const topics = getSubjectTopics(subject.slug, lang);
+
+const T = {
+	ca: {
+		back: `← ${subject.label.ca}`,
+		title: `Qüestionaris — ${subject.label.ca}`,
+		intro: "Tria un tema per practicar, o posa't a prova amb preguntes aleatòries.",
+		random: 'Aleatori',
+		randomDesc: "10 preguntes a l'atzar de tots els temes",
+		errors: "Test d'errors",
+		errorsDesc: 'Repassa les que has fallat (cal iniciar sessió)',
+		topicDesc: '10 preguntes',
+	},
+	es: {
+		back: `← ${subject.label.es}`,
+		title: `Cuestionarios — ${subject.label.es}`,
+		intro: 'Elige un tema para practicar, o ponte a prueba con preguntas al azar.',
+		random: 'Aleatorio',
+		randomDesc: '10 preguntas al azar de todos los temas',
+		errors: 'Test de errores',
+		errorsDesc: 'Repasa las que has fallado (hace falta iniciar sesión)',
+		topicDesc: '10 preguntas',
+	},
+}[lang];
+---
+
+<main>
+	<a class="back" href={`${p}/learning/${subject.slug}`}>{T.back}</a>
+	<h1>{T.title}</h1>
+	<p class="intro">{T.intro}</p>
+
+	<div class="grid" data-subject-slug={subject.slug}>
+		<a class="widget random" href={`${p}/learning/${subject.slug}/quiz/aleatori`}>
+			<span class="icon" set:html={ICONS.random} />
+			<span class="widget-title">{T.random}</span>
+			<span class="widget-desc">{T.randomDesc}</span>
+		</a>
+
+		<a class="widget errors" href={`${p}/learning/${subject.slug}/quiz/errors`}>
+			<span class="icon" set:html={ICONS.redo} />
+			<span class="widget-title">{T.errors}</span>
+			<span class="widget-desc">{T.errorsDesc}</span>
+		</a>
+
+		{topics.map((topic) => (
+			<a class="widget topic-widget" data-topic-slug={topic.slug} href={`${p}/learning/${subject.slug}/quiz/${topic.slug}`}>
+				<span class="icon" set:html={ICONS.quiz} />
+				<span class="widget-title">{topic.label}</span>
+				<span class="widget-desc">{T.topicDesc}</span>
+			</a>
+		))}
+	</div>
+</main>
+
+<style>
+	main {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	.back {
+		display: inline-block;
+		margin-bottom: 1rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+
+	.back:hover {
+		color: var(--text);
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	.intro {
+		color: var(--text-muted);
+		margin-bottom: 2rem;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1rem;
+	}
+
+	@media (max-width: 48rem) {
+		.grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.widget {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 1.5rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		text-decoration: none;
+		color: var(--text);
+		transition: transform 0.2s, background 0.2s;
+	}
+
+	.widget:hover {
+		background: var(--surface-hover);
+		transform: translateY(-3px);
+	}
+
+	.widget .icon {
+		width: 1.75rem;
+		height: 1.75rem;
+		color: var(--accent-strong);
+	}
+
+	.widget.random .icon {
+		color: var(--gold);
+	}
+
+	.widget-title {
+		font-weight: 600;
+	}
+
+	.widget-desc {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+	}
+
+	.topic-widget.progress-pass {
+		border-color: var(--success);
+		box-shadow: inset 3px 0 0 var(--success);
+	}
+
+	.topic-widget.progress-fail {
+		border-color: #ef4444;
+		box-shadow: inset 3px 0 0 #ef4444;
+	}
+</style>
+
+<script>
+	import { supabase } from '../lib/supabase-client';
+	import { slugifyTopic } from '../data/subjects';
+
+	async function colorProgress() {
+		const { data } = await supabase.auth.getSession();
+		const userId = data.session?.user.id;
+		if (!userId) return;
+
+		const grid = document.querySelector('.grid') as HTMLElement;
+		const subjectSlug = grid.dataset.subjectSlug!;
+
+		const { data: qs } = await supabase.from('questions').select('id, topic').eq('subject', subjectSlug);
+		if (!qs || qs.length === 0) return;
+
+		const { data: attempts } = await supabase
+			.from('question_attempts')
+			.select('question_id, correct')
+			.eq('user_id', userId)
+			.in(
+				'question_id',
+				qs.map((q) => q.id)
+			);
+
+		const attemptMap = new Map((attempts ?? []).map((a) => [a.question_id, a.correct]));
+
+		const stats = new Map<string, { attempted: number; correct: number; total: number }>();
+		for (const q of qs) {
+			const slug = slugifyTopic(q.topic);
+			const s = stats.get(slug) ?? { attempted: 0, correct: 0, total: 0 };
+			s.total += 1;
+			if (attemptMap.has(q.id)) {
+				s.attempted += 1;
+				if (attemptMap.get(q.id)) s.correct += 1;
+			}
+			stats.set(slug, s);
+		}
+
+		document.querySelectorAll<HTMLElement>('.topic-widget').forEach((el) => {
+			const slug = el.dataset.topicSlug!;
+			const s = stats.get(slug);
+			if (!s || s.attempted === 0) return;
+			const passed = s.attempted === s.total && s.correct / s.attempted >= 0.5;
+			el.classList.add(passed ? 'progress-pass' : 'progress-fail');
+		});
+	}
+
+	colorProgress();
+</script>

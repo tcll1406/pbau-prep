@@ -1,55 +1,77 @@
 ---
 import { ICONS } from '../data/icons';
+import { NAV_LINKS, UI, type Lang } from '../data/i18n';
 
 interface Props {
 	title: string;
+	lang?: Lang;
+	description?: string;
 }
 
-const { title } = Astro.props;
+const DEFAULT_DESCRIPTION: Record<Lang, string> = {
+	ca: "Prepara la PAU a les Illes Balears: teoria, qüestionaris i exàmens anteriors de Física, Matemàtiques II i MACS II, més una calculadora de nota d'accés i un cercador de notes de tall.",
+	es: 'Prepara la PAU en las Islas Baleares: teoría, cuestionarios y exámenes anteriores de Física, Matemáticas II y MACS II, más una calculadora de nota de acceso y un buscador de notas de corte.',
+};
 
-const NAV_LINKS = [
-	{ href: '/', label: 'Inici' },
-	{ href: '/learning', label: 'Learning Hub' },
-	{ href: '/career', label: 'Career Hub' },
-	{ href: '/faq', label: 'FAQ' },
-	{ href: '/about', label: 'Sobre nosaltres' },
-];
+const { title, lang = 'ca', description = DEFAULT_DESCRIPTION[lang] } = Astro.props;
+
+const pathname = Astro.url.pathname;
+const altHref = lang === 'es' ? pathname.slice(3) || '/' : pathname === '/' ? '/es' : `/es${pathname}`;
+const altLabel = lang === 'es' ? 'CA' : 'ES';
+const loginHref = lang === 'es' ? '/es/login' : '/login';
+
+const fullTitle = `${title} — PAU Balears Prep`;
+const canonicalURL = new URL(pathname, Astro.site);
+const alternateURL = new URL(altHref, Astro.site);
+const ogImageURL = new URL('/favicon.png', Astro.site);
 ---
 
-<html lang="ca">
+<html lang={lang}>
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
-		<title>{title} — PBAU Prep</title>
+		<title>{fullTitle}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		<link rel="alternate" hreflang="ca" href={lang === 'es' ? alternateURL : canonicalURL} />
+		<link rel="alternate" hreflang="es" href={lang === 'es' ? canonicalURL : alternateURL} />
+		<link rel="alternate" hreflang="x-default" href={lang === 'es' ? alternateURL : canonicalURL} />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="PAU Balears Prep" />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:image" content={ogImageURL} />
+		<meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'ca_ES'} />
+
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content={fullTitle} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImageURL} />
 	</head>
 	<body>
 		<header>
 			<nav>
-				<a class="brand" href="/">PBAU Prep</a>
+				<a class="brand" href={lang === 'es' ? '/es' : '/'}>
+					<img src="/favicon.png" alt="" class="brand-icon" />
+					PAU Balears Prep
+				</a>
 				<button id="nav-toggle" aria-expanded="false" aria-controls="nav-links">☰</button>
 				<ul id="nav-links">
-					{NAV_LINKS.map((link) => (
+					{NAV_LINKS[lang].map((link) => (
 						<li><a href={link.href}>{link.label}</a></li>
 					))}
-					<li id="nav-auth-logged-out">
-						<a href="/login" class="nav-user-btn" aria-label="Inicia sessió" set:html={ICONS.user} />
+					<li>
+						<a class="nav-lang-toggle" href={altHref}>{altLabel}</a>
 					</li>
-					<li id="nav-auth-logged-in" class="nav-auth-dropdown" hidden>
-						<button
-							id="nav-user-toggle"
-							type="button"
-							class="nav-user-btn"
-							aria-label="El meu compte"
-							aria-expanded="false"
-							set:html={ICONS.user}
-						/>
-						<div id="nav-dropdown" class="nav-dropdown" hidden>
-							<span id="nav-user-email" class="nav-user-email"></span>
-							<button id="nav-logout" type="button">Tancar sessió</button>
-						</div>
+					<li id="nav-auth-logged-out">
+						<a href={loginHref} class="nav-user-btn" aria-label={UI[lang].login} set:html={ICONS.user} />
+					</li>
+					<li id="nav-auth-logged-in" hidden>
+						<button id="nav-logout" type="button">{UI[lang].logout}</button>
 					</li>
 				</ul>
 			</nav>
@@ -66,7 +88,7 @@ const NAV_LINKS = [
 		--border: rgba(255, 255, 255, 0.08);
 		--text: #f5f6fa;
 		--text-muted: #9aa3b2;
-		--accent: #3b82f6;
+		--accent: #2563eb;
 		--accent-strong: #60a5fa;
 		--gold: #facc15;
 		--success: #22c55e;
@@ -125,9 +147,18 @@ const NAV_LINKS = [
 	}
 
 	.brand {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		font-weight: 700;
 		text-decoration: none;
 		color: var(--text);
+	}
+
+	.brand-icon {
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: var(--radius-sm);
 	}
 
 	#nav-toggle {
@@ -141,6 +172,7 @@ const NAV_LINKS = [
 
 	#nav-links {
 		display: flex;
+		align-items: center;
 		gap: 1.5rem;
 		list-style: none;
 		margin: 0;
@@ -155,10 +187,6 @@ const NAV_LINKS = [
 
 	#nav-links a:hover {
 		color: var(--text);
-	}
-
-	.nav-auth-dropdown {
-		position: relative;
 	}
 
 	.nav-user-btn {
@@ -181,31 +209,9 @@ const NAV_LINKS = [
 		height: 1.1rem;
 	}
 
-	.nav-user-btn:hover,
-	#nav-user-toggle[aria-expanded='true'] {
+	.nav-user-btn:hover {
 		color: var(--text);
 		border-color: var(--accent);
-	}
-
-	.nav-dropdown {
-		position: absolute;
-		top: calc(100% + 0.5rem);
-		right: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-		min-width: 12rem;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		padding: 0.75rem;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-	}
-
-	.nav-user-email {
-		font-size: 0.85rem;
-		color: var(--text-muted);
-		word-break: break-all;
 	}
 
 	#nav-logout {
@@ -221,6 +227,27 @@ const NAV_LINKS = [
 	}
 
 	#nav-logout:hover {
+		color: var(--text);
+		border-color: var(--accent);
+	}
+
+	.nav-lang-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 50%;
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.8rem;
+		font-weight: 700;
+		transition: color 0.2s, border-color 0.2s;
+	}
+
+	.nav-lang-toggle:hover {
 		color: var(--text);
 		border-color: var(--accent);
 	}
@@ -263,38 +290,15 @@ const NAV_LINKS = [
 
 	const loggedOut = document.getElementById('nav-auth-logged-out')!;
 	const loggedIn = document.getElementById('nav-auth-logged-in')!;
-	const userEmail = document.getElementById('nav-user-email')!;
 	const logoutBtn = document.getElementById('nav-logout')!;
-	const userToggle = document.getElementById('nav-user-toggle')!;
-	const dropdown = document.getElementById('nav-dropdown')!;
 
 	function render(email: string | null) {
 		loggedOut.hidden = Boolean(email);
 		loggedIn.hidden = !email;
-		userEmail.textContent = email ?? '';
 	}
 
 	supabase.auth.getSession().then(({ data }) => render(data.session?.user.email ?? null));
 	supabase.auth.onAuthStateChange((_event, session) => render(session?.user.email ?? null));
-
-	function closeDropdown() {
-		dropdown.hidden = true;
-		userToggle.setAttribute('aria-expanded', 'false');
-	}
-
-	userToggle.addEventListener('click', () => {
-		const isOpen = dropdown.hidden;
-		dropdown.hidden = !isOpen;
-		userToggle.setAttribute('aria-expanded', String(isOpen));
-	});
-
-	document.addEventListener('click', (e) => {
-		if (!loggedIn.contains(e.target as Node)) closeDropdown();
-	});
-
-	document.addEventListener('keydown', (e) => {
-		if (e.key === 'Escape') closeDropdown();
-	});
 
 	logoutBtn.addEventListener('click', async () => {
 		await supabase.auth.signOut();

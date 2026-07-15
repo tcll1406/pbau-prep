@@ -1,0 +1,142 @@
+---
+import Quiz from './Quiz.astro';
+import type { Lang } from '../data/i18n';
+import type { Question } from '../lib/questions';
+
+interface Props {
+	subject: { slug: string; label: { ca: string; es: string } };
+	questions: Question[];
+	lang: Lang;
+}
+
+const { subject, questions, lang } = Astro.props;
+const p = lang === 'es' ? '/es' : '';
+
+const T = {
+	ca: {
+		back: `← ${subject.label.ca}`,
+		title: "Test d'errors",
+		intro: `Repassa les preguntes que has fallat en qüestionaris anteriors de ${subject.label.ca}.`,
+		loginPrompt: "Has d'iniciar sessió per veure el teu test d'errors.",
+		login: 'Inicia sessió',
+		emptyPrompt: "Encara no has fallat cap pregunta d'aquesta assignatura. Fes algun qüestionari primer!",
+		viewQuizzes: 'Veure els qüestionaris',
+	},
+	es: {
+		back: `← ${subject.label.es}`,
+		title: 'Test de errores',
+		intro: `Repasa las preguntas que has fallado en cuestionarios anteriores de ${subject.label.es}.`,
+		loginPrompt: 'Debes iniciar sesión para ver tu test de errores.',
+		login: 'Iniciar sesión',
+		emptyPrompt: 'Todavía no has fallado ninguna pregunta de esta asignatura. ¡Haz algún cuestionario primero!',
+		viewQuizzes: 'Ver los cuestionarios',
+	},
+}[lang];
+---
+
+<main>
+	<a class="back" href={`${p}/learning/${subject.slug}/quiz`}>{T.back}</a>
+	<h1>{T.title}</h1>
+	<p class="intro">{T.intro}</p>
+
+	<div id="login-prompt" class="prompt" hidden>
+		<p>{T.loginPrompt}</p>
+		<a class="btn" href={`${p}/login?redirect=${p}/learning/${subject.slug}/quiz/errors`}>{T.login}</a>
+	</div>
+
+	<div id="empty-state" class="prompt" hidden>
+		<p>{T.emptyPrompt}</p>
+		<a class="btn" href={`${p}/learning/${subject.slug}/quiz`}>{T.viewQuizzes}</a>
+	</div>
+
+	<Quiz questions={questions} manualInit={true} lang={lang} />
+</main>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		line-height: 1.6;
+	}
+
+	.back {
+		display: inline-block;
+		margin-bottom: 1rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+
+	.back:hover {
+		color: var(--text);
+	}
+
+	h1 {
+		letter-spacing: -0.02em;
+	}
+
+	.intro {
+		color: var(--text-muted);
+		margin-bottom: 2rem;
+	}
+
+	.prompt {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.5rem;
+		text-align: center;
+	}
+
+	.prompt .btn {
+		display: inline-block;
+		margin-top: 0.75rem;
+		background: var(--accent);
+		color: #fff;
+		text-decoration: none;
+		border-radius: var(--radius-sm);
+		padding: 0.6rem 1.25rem;
+		font-weight: 600;
+	}
+</style>
+
+<script>
+	import { supabase } from '../lib/supabase-client';
+	import { applyQuizFilter, getAllRenderedQuestionIds } from '../lib/quiz-filter-client';
+
+	const quizEl = document.getElementById('quiz')!;
+	const loginPrompt = document.getElementById('login-prompt')!;
+	const emptyState = document.getElementById('empty-state')!;
+
+	async function init() {
+		const { data } = await supabase.auth.getSession();
+		const userId = data.session?.user.id;
+
+		if (!userId) {
+			quizEl.hidden = true;
+			loginPrompt.hidden = false;
+			return;
+		}
+
+		const allIds = getAllRenderedQuestionIds();
+		const { data: attempts } = await supabase
+			.from('question_attempts')
+			.select('question_id')
+			.eq('user_id', userId)
+			.eq('correct', false)
+			.in('question_id', allIds);
+
+		const failedIds = new Set((attempts ?? []).map((a) => a.question_id as number));
+
+		if (failedIds.size === 0) {
+			quizEl.hidden = true;
+			emptyState.hidden = false;
+			return;
+		}
+
+		await applyQuizFilter(failedIds);
+	}
+
+	init();
+</script>

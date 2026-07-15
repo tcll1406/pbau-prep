@@ -3,31 +3,62 @@ import Base from '../layouts/Base.astro';
 import { TIPS } from '../data/tips';
 ---
 
-<Base title="Sobre nosaltres">
+<Base
+	title="Sobre nosaltres"
+	description="La missió de PAU Balears Prep, qui hi ha darrere del projecte i com ajudem els estudiants de les Illes Balears a preparar la PAU."
+>
 	<main>
 		<h1>Sobre nosaltres</h1>
 
 		<p>
-			La missió de PBAU Prep és ajudar els estudiants de batxillerat de les Illes Balears a
-			aconseguir les millors notes possibles a la PBAU i assolir la nota necessària per accedir
+			La missió de PAU Balears Prep és ajudar els estudiants de batxillerat de les Illes Balears a
+			aconseguir les millors notes possibles a la PAU i assolir la nota necessària per accedir
 			als estudis que volen.
 		</p>
+
+		<section class="author">
+			<p class="author-eyebrow">Coneix el fundador</p>
+			<div class="author-header">
+				<img src="/antoni-colom.png" alt="Antoni Colom Lladó" class="author-photo" />
+				<div class="author-info">
+					<span class="author-name">Antoni Colom Lladó</span>
+					<a
+						class="author-linkedin"
+						href="https://www.linkedin.com/in/antoni-colom-lladó-120456352"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						LinkedIn
+					</a>
+				</div>
+			</div>
+			<p>
+				Sóc estudiant de tercer curs de Tecnologies Industrials i Anàlisi Econòmica, amb una forta
+				voluntat d'aprendre i créixer tant a nivell acadèmic com personal. Sóc curiós, adaptable i
+				tinc un interès especial per la tecnologia, les finances i la consultoria estratègica.
+			</p>
+			<p>
+				Fora dels estudis, m'apassiona l'esport. Entrenar natació, ciclisme i running m'ha ensenyat
+				disciplina, perseverança i la capacitat de fixar-me objectius, valors que vull portar
+				també al meu camí professional.
+			</p>
+		</section>
 
 		<p>
 			La plataforma va més enllà de l'estudi tradicional, oferint als estudiants un avantatge
 			estratègic a través de tres objectius clau:
 		</p>
 
-		<section>
+		<section class="objective">
 			<h2>Desmitificar el procés</h2>
 			<p>
-				Oferim una guia clara i pràctica sobre el format de la PBAU, els terminis administratius
+				Oferim una guia clara i pràctica sobre el format de la PAU, els terminis administratius
 				i els criteris de correcció més complexos (com la ponderació 60/40 i els multiplicadors
 				de la fase d'admissió).
 			</p>
 		</section>
 
-		<section>
+		<section class="objective">
 			<h2>Planificació estratègica</h2>
 			<p>
 				El Career Hub, amb la Calculadora de Nota i el Selector de Graus, permet als estudiants
@@ -35,7 +66,7 @@ import { TIPS } from '../data/tips';
 			</p>
 		</section>
 
-		<section>
+		<section class="objective">
 			<h2>Domini acadèmic focalitzat</h2>
 			<p>
 				El Learning Hub ofereix resums de teoria concisos, més de 150 qüestionaris interactius
@@ -46,10 +77,10 @@ import { TIPS } from '../data/tips';
 
 		<section id="tips" class="tips-section">
 			<h2>Tips per triomfar</h2>
-			<p class="tips-intro">Consells d'un antic estudiant de Batxillerat que va passar per la PBAU.</p>
+			<p class="tips-intro">Consells d'un antic estudiant de Batxillerat que va passar per la PAU.</p>
 
 			<div class="tips-grid">
-				{TIPS.map((tip) => (
+				{TIPS.ca.map((tip) => (
 					<article class="tip-card">
 						<span class="tip-category">{tip.category}</span>
 						<h3>{tip.title}</h3>
@@ -89,6 +120,10 @@ import { TIPS } from '../data/tips';
 		color: var(--text-muted);
 	}
 
+	.objective h2 {
+		font-size: 1.2rem;
+	}
+
 	.tips-intro {
 		margin-top: 0;
 	}
@@ -125,5 +160,51 @@ import { TIPS } from '../data/tips';
 	.tip-card p {
 		margin: 0;
 		font-size: 0.9rem;
+	}
+
+	.author-eyebrow {
+		margin: 0 0 1rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: var(--gold);
+	}
+
+	.author-header {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.author-photo {
+		width: 3.5rem;
+		height: 3.5rem;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+	}
+
+	.author-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.author-name {
+		font-weight: 700;
+		color: var(--text);
+	}
+
+	.author-linkedin {
+		font-size: 0.9rem;
+		color: var(--accent-strong);
+		text-decoration: none;
+		width: fit-content;
+	}
+
+	.author-linkedin:hover {
+		text-decoration: underline;
 	}
 </style>
