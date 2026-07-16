@@ -28,6 +28,7 @@ const T = {
 		disclaimer:
 			'La nota de tall canvia cada any segons la demanda de cada grau. Les notes d’anys anteriors són només orientatives, no una garantia d’admissió.',
 		searchPlaceholder: 'Cerca un grau, universitat o ciutat…',
+		totesComunitats: 'Totes les comunitats',
 		totesCiutats: 'Totes les ciutats',
 		totesUniversitats: 'Totes les universitats',
 		assolible: 'Assolible amb la meva nota',
@@ -53,6 +54,7 @@ const T = {
 		disclaimer:
 			'La nota de corte cambia cada año según la demanda de cada grado. Las notas de años anteriores son solo orientativas, no una garantía de admisión.',
 		searchPlaceholder: 'Busca un grado, universidad o ciudad…',
+		totesComunitats: 'Todas las comunidades',
 		totesCiutats: 'Todas las ciudades',
 		totesUniversitats: 'Todas las universidades',
 		assolible: 'Alcanzable con mi nota',
@@ -131,7 +133,10 @@ const T = {
 			<input type="search" id="degree-search" placeholder={T.searchPlaceholder} />
 
 			<div class="filter-bar">
-				<select id="filter-city">
+				<select id="filter-region">
+					<option value="">{T.totesComunitats}</option>
+				</select>
+				<select id="filter-city" disabled>
 					<option value="">{T.totesCiutats}</option>
 				</select>
 				<select id="filter-university">
@@ -176,6 +181,11 @@ const T = {
 		}
 	}
 
+	.calculator,
+	.degrees {
+		min-width: 0;
+	}
+
 	.calculator {
 		position: sticky;
 		top: 5rem;
@@ -192,6 +202,7 @@ const T = {
 	}
 
 	fieldset {
+		min-width: 0;
 		border: none;
 		padding: 0;
 		margin: 0 0 1.25rem;
@@ -243,6 +254,7 @@ const T = {
 	}
 
 	.grid5 input {
+		min-width: 0;
 		padding: 0.4rem 0.3rem;
 		font-size: 0.85rem;
 	}
@@ -256,6 +268,7 @@ const T = {
 
 	.subject-row input,
 	.subject-row select {
+		min-width: 0;
 		margin-top: 0;
 	}
 
@@ -349,38 +362,38 @@ const T = {
 		gap: 0.5rem;
 	}
 
-	.degree-list li {
+	:global(.degree-list li) {
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-sm);
 		padding: 0.75rem 1rem;
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
+		align-items: flex-start;
 		gap: 1rem;
 		transition: transform 0.2s, background 0.2s;
 	}
 
-	.degree-list li:hover {
+	:global(.degree-list li:hover) {
 		background: var(--surface-hover);
 		transform: translateY(-2px);
 	}
 
-	.degree-info strong {
+	:global(.degree-info strong) {
 		display: block;
 	}
 
-	.degree-info span {
+	:global(.degree-info span) {
 		font-size: 0.85rem;
 		color: var(--text-muted);
 	}
 
-	.degree-cutoff {
+	:global(.degree-cutoff) {
 		text-align: right;
 		white-space: nowrap;
 	}
 
-	.degree-list button {
+	:global(.degree-list button) {
 		width: auto;
 		margin-top: 0.35rem;
 		background: var(--accent);
@@ -393,7 +406,7 @@ const T = {
 		transition: background 0.2s;
 	}
 
-	.degree-list button:hover {
+	:global(.degree-list button:hover) {
 		background: #1d4ed8;
 	}
 </style>
@@ -429,8 +442,13 @@ const T = {
 		name: string;
 		university: string;
 		city: string;
+		region: string | null;
 		duration: number | null;
 		cutoff: number | null;
+	}
+
+	function splitParts(value: string): string[] {
+		return value.split(' / ').map((v) => v.trim()).filter(Boolean);
 	}
 
 	const batxInput = document.getElementById('batx') as HTMLInputElement;
@@ -451,7 +469,9 @@ const T = {
 	const targetClear = document.getElementById('target-clear')!;
 
 	const searchInput = document.getElementById('degree-search') as HTMLInputElement;
+	const regionFilter = document.getElementById('filter-region') as HTMLSelectElement;
 	const cityFilter = document.getElementById('filter-city') as HTMLSelectElement;
+	const cityPlaceholderText = cityFilter.querySelector('option')!.textContent!;
 	const universityFilter = document.getElementById('filter-university') as HTMLSelectElement;
 	const achievableFilter = document.getElementById('filter-achievable') as HTMLInputElement;
 	const listEl = document.getElementById('degree-list')!;
@@ -472,11 +492,12 @@ const T = {
 		listEl.innerHTML = '';
 
 		const q = query.trim().toLowerCase();
+		const region = regionFilter.value;
 		const city = cityFilter.value;
 		const university = universityFilter.value;
 		const achievableOnly = achievableFilter.checked;
 
-		const hasActiveFilter = q.length >= 2 || city !== '' || university !== '' || achievableOnly;
+		const hasActiveFilter = q.length >= 2 || region !== '' || city !== '' || university !== '' || achievableOnly;
 
 		if (!hasActiveFilter) {
 			statusEl.textContent = SCRIPT_STRINGS.typeToSearch;
@@ -487,12 +508,20 @@ const T = {
 			if (q && !(d.name.toLowerCase().includes(q) || d.university.toLowerCase().includes(q) || d.city.toLowerCase().includes(q))) {
 				return false;
 			}
-			if (city && d.city !== city) return false;
-			if (university && d.university !== university) return false;
+			if (region && d.region !== region) return false;
+			if (city && !splitParts(d.city).includes(city)) return false;
+			if (university && !splitParts(d.university).includes(university)) return false;
 			if (achievableOnly) {
 				if (currentAdmissio === null || d.cutoff === null || d.cutoff > currentAdmissio) return false;
 			}
 			return true;
+		});
+
+		matches.sort((a, b) => {
+			if (a.cutoff === null && b.cutoff === null) return 0;
+			if (a.cutoff === null) return 1;
+			if (b.cutoff === null) return -1;
+			return b.cutoff - a.cutoff;
 		});
 
 		statusEl.textContent = matches.length
@@ -579,19 +608,42 @@ const T = {
 	});
 
 	searchInput.addEventListener('input', () => renderResults(searchInput.value));
+	regionFilter.addEventListener('change', () => {
+		populateCityOptions(regionFilter.value);
+		renderResults(searchInput.value);
+	});
 	cityFilter.addEventListener('change', () => renderResults(searchInput.value));
 	universityFilter.addEventListener('change', () => renderResults(searchInput.value));
 	achievableFilter.addEventListener('change', () => renderResults(searchInput.value));
 
-	function populateFilterOptions() {
-		const cities = [...new Set(degrees.map((d) => d.city).filter(Boolean))].sort();
-		const universities = [...new Set(degrees.map((d) => d.university).filter(Boolean))].sort();
+	function populateCityOptions(region: string) {
+		cityFilter.innerHTML = '';
+		const placeholder = document.createElement('option');
+		placeholder.value = '';
+		placeholder.textContent = cityPlaceholderText;
+		cityFilter.appendChild(placeholder);
 
+		const scoped = region ? degrees.filter((d) => d.region === region) : degrees;
+		const cities = [...new Set(scoped.flatMap((d) => splitParts(d.city)))].sort();
 		for (const city of cities) {
 			const opt = document.createElement('option');
 			opt.value = city;
 			opt.textContent = city;
 			cityFilter.appendChild(opt);
+		}
+		cityFilter.value = '';
+		cityFilter.disabled = !region;
+	}
+
+	function populateFilterOptions() {
+		const regions = [...new Set(degrees.map((d) => d.region).filter((r): r is string => Boolean(r)))].sort();
+		const universities = [...new Set(degrees.flatMap((d) => splitParts(d.university)))].sort();
+
+		for (const region of regions) {
+			const opt = document.createElement('option');
+			opt.value = region;
+			opt.textContent = region;
+			regionFilter.appendChild(opt);
 		}
 		for (const uni of universities) {
 			const opt = document.createElement('option');
