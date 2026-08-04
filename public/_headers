@@ -1,8 +1,10 @@
 # style-src needs 'unsafe-inline': KaTeX renders math with per-glyph inline
-# style="..." attributes (spacing/sizing), not classes. No inline <script> exists
-# anywhere in the build (verified — astro.config.mjs sets assetsInlineLimit: 0
-# so every script ships as an external /_astro/*.js file), so script-src stays
-# strict with no exceptions.
+# style="..." attributes (spacing/sizing), not classes. No inline *executable*
+# <script> exists anywhere in the build (verified — astro.config.mjs sets
+# assetsInlineLimit: 0 so every script ships as an external /_astro/*.js file;
+# the only inline <script> tags are type="application/ld+json" JSON-LD blocks,
+# which CSP's script-src never gates since they aren't executable script per
+# the HTML spec), so script-src stays strict with no exceptions.
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

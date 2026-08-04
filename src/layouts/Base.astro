@@ -6,6 +6,8 @@ interface Props {
 	title: string;
 	lang?: Lang;
 	description?: string;
+	noindex?: boolean;
+	structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const DEFAULT_DESCRIPTION: Record<Lang, string> = {
@@ -13,7 +15,7 @@ const DEFAULT_DESCRIPTION: Record<Lang, string> = {
 	es: 'Prepara la PAU en las Islas Baleares: teoría, cuestionarios y exámenes anteriores de Física, Matemáticas II y MACS II, más una calculadora de nota de acceso y un buscador de notas de corte.',
 };
 
-const { title, lang = 'ca', description = DEFAULT_DESCRIPTION[lang] } = Astro.props;
+const { title, lang = 'ca', description = DEFAULT_DESCRIPTION[lang], noindex = false, structuredData } = Astro.props;
 
 const pathname = Astro.url.pathname;
 const altHref = lang === 'es' ? pathname.slice(3) || '/' : pathname === '/' ? '/es' : `/es${pathname}`;
@@ -24,6 +26,7 @@ const fullTitle = `${title} — PAU Balears Prep`;
 const canonicalURL = new URL(pathname, Astro.site);
 const alternateURL = new URL(altHref, Astro.site);
 const ogImageURL = new URL('/favicon.png', Astro.site);
+const googleSiteVerification = import.meta.env.GOOGLE_SITE_VERIFICATION;
 ---
 
 <html lang={lang}>
@@ -35,9 +38,16 @@ const ogImageURL = new URL('/favicon.png', Astro.site);
 		<title>{fullTitle}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
-		<link rel="alternate" hreflang="ca" href={lang === 'es' ? alternateURL : canonicalURL} />
-		<link rel="alternate" hreflang="es" href={lang === 'es' ? canonicalURL : alternateURL} />
-		<link rel="alternate" hreflang="x-default" href={lang === 'es' ? alternateURL : canonicalURL} />
+		{noindex ? (
+			<meta name="robots" content="noindex, follow" />
+		) : (
+			<Fragment>
+				<link rel="alternate" hreflang="ca" href={lang === 'es' ? alternateURL : canonicalURL} />
+				<link rel="alternate" hreflang="es" href={lang === 'es' ? canonicalURL : alternateURL} />
+				<link rel="alternate" hreflang="x-default" href={lang === 'es' ? alternateURL : canonicalURL} />
+			</Fragment>
+		)}
+		{googleSiteVerification && <meta name="google-site-verification" content={googleSiteVerification} />}
 
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="PAU Balears Prep" />
@@ -47,10 +57,12 @@ const ogImageURL = new URL('/favicon.png', Astro.site);
 		<meta property="og:image" content={ogImageURL} />
 		<meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'ca_ES'} />
 
-		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={fullTitle} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImageURL} />
+
+		{structuredData && <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />}
 	</head>
 	<body>
 		<header>

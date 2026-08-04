@@ -24,9 +24,30 @@ const STEPS = [
 		desc: "Simula la teva nota d'accés i cerca carreres a l'abast",
 	},
 ];
+
+const structuredData = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'EducationalOrganization',
+		name: 'PAU Balears Prep',
+		url: 'https://paubalearsprep.es/',
+		logo: 'https://paubalearsprep.es/favicon.png',
+		description:
+			"Plataforma gratuïta per preparar la PAU a les Illes Balears: teoria, qüestionaris i exàmens anteriors de Física, Matemàtiques II i MACS II.",
+		inLanguage: 'ca',
+		areaServed: 'Illes Balears',
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: 'PAU Balears Prep',
+		url: 'https://paubalearsprep.es/',
+		inLanguage: 'ca',
+	},
+];
 ---
 
-<Base title="Prepara la PAU a les Illes Balears">
+<Base title="Prepara la PAU a les Illes Balears" structuredData={structuredData}>
 	<section class="hero">
 		<div class="container">
 			<h1>Aconsegueix la teva millor nota a la PAU</h1>

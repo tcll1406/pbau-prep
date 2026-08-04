@@ -24,9 +24,30 @@ const STEPS = [
 		desc: 'Simula tu nota de acceso y busca carreras a tu alcance',
 	},
 ];
+
+const structuredData = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'EducationalOrganization',
+		name: 'PAU Balears Prep',
+		url: 'https://paubalearsprep.es/es',
+		logo: 'https://paubalearsprep.es/favicon.png',
+		description:
+			'Plataforma gratuita para preparar la PAU en las Islas Baleares: teoría, cuestionarios y exámenes anteriores de Física, Matemáticas II y MACS II.',
+		inLanguage: 'es',
+		areaServed: 'Illes Balears',
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: 'PAU Balears Prep',
+		url: 'https://paubalearsprep.es/es',
+		inLanguage: 'es',
+	},
+];
 ---
 
-<Base title="Prepara la PAU en las Islas Baleares" lang="es">
+<Base title="Prepara la PAU en las Islas Baleares" lang="es" structuredData={structuredData}>
 	<section class="hero">
 		<div class="container">
 			<h1>Consigue tu mejor nota en la PAU</h1>

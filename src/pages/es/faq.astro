@@ -1,12 +1,27 @@
 ---
 import Base from '../../layouts/Base.astro';
 import FaqPage from '../../components/FaqPage.astro';
+import { FAQ_ITEMS } from '../../data/faq';
+
+const faqStructuredData = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: FAQ_ITEMS.es.map((item) => ({
+		'@type': 'Question',
+		name: item.question,
+		acceptedAnswer: {
+			'@type': 'Answer',
+			text: item.answer,
+		},
+	})),
+};
 ---
 
 <Base
 	title="FAQ"
 	lang="es"
 	description="Respuestas a las dudas más frecuentes sobre la PAU: convocatorias, nota de acceso y de admisión, validez de las notas y mucho más."
+	structuredData={faqStructuredData}
 >
 	<FaqPage lang="es" />
 </Base>
