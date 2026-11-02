@@ -25,7 +25,7 @@ Priorities: (1) genuinely useful, (2) clean and reliable, (3) efficient to build
 - **Netlify** — deployment.
 - Vanilla JS/CSS for interactivity and styling. No component framework (React etc.) unless a stage genuinely needs one.
 
-**Out of scope — do not add:** Firebase, Next.js, Tailwind (or any CSS framework beyond trivial helpers), analytics (PostHog etc.), SEO tooling, state-management libraries.
+**Out of scope — do not add:** Firebase, Next.js, Tailwind (or any CSS framework beyond trivial helpers), analytics other than the consent-gated Google Tag Manager added in Stage 18 (no PostHog etc.), state-management libraries.
 
 > A `style.json` was provided as a visual reference (§3). Its own `tech_stack`/`methodology` fields describe a *different* project (Next.js, Tailwind, Firebase Auth, PostHog, SurferSEO) — that part is not used. Only its palette/component/typography direction applies here, implemented in plain CSS.
 
@@ -106,6 +106,7 @@ Every route above has a Spanish mirror under `/es/...` (Stage 9) — same struct
 15. ✅ Career Hub degree-data overhaul (region→city filter cascade, Catalunya + Illes Balears Catalan naming, cutoff sort, joint-programme dedup) + code audit.
 16. ✅ SEO positioning — fixed stale canonical domain, JSON-LD structured data, Search Console verification hook, keyword-targeted titles.
 17. ✅ Degree cutoff refresh from official 2026-27 regional sources (13 of 19 regions) + homepage Balears capitalization fix.
+18. ✅ Google Tag Manager (`GTM-52HCRWQH`) behind a bilingual cookie-consent banner.
 
 ## 8. Decisions log
 
@@ -127,8 +128,11 @@ Every route above has a Spanish mirror under `/es/...` (Stage 9) — same struct
 
 - **Stage 17:** fixed a lowercase "balears" in the homepage's Catalan mission statement — should be capitalized as a proper noun, matching the Spanish sibling page and the Stage 15 "Illes Balears" convention. Main effort: refreshed stale/mixed-year cutoff grades in `public/data/degrees.json` against each region's own official admissions source (not a single aggregator like educaweb) — 1,999 of 5,465 entries updated, public universities only (private universities sit outside each region's centralized "distrito único" admission coordination, so this sourcing method doesn't apply to them; left untouched). Sources and formats varied by region: bulk PDF (Madrid, Catalunya, Comunidad Valenciana, Aragón, Navarra, Asturias, Cantabria, Galicia — Galicia's source is in Galician, so matching needed a Galician→Spanish translation layer plus fuzzy matching on top); no bulk export at all (Andalucía, Castilla y León — reverse-engineered the official portals' search forms and scripted per-university/degree queries instead); outright bot-blocking (Canarias' ULPGC returned 403 to a plain fetch — a browser User-Agent + Referer header got through; Castilla-La Mancha's UCLM sits behind an Azure WAF JS challenge that no amount of header spoofing bypasses, genuinely inaccessible from here). Matching used exact name normalization first, then a high-threshold (≥0.93–0.96) fuzzy fallback; any collision where multiple campuses share one degree name with different cutoffs was left unresolved rather than guessed, keeping the prior value. Raw source files kept untracked at repo root, one per processed region, same convention as `catmarks.json`/`balearsmarks.json`. Not updated this pass — each had no 2026-27 data published yet at its official source, or was inaccessible, not a data-quality gap: País Vasco, Universidad de Murcia (its own portal; UPCT alone was reachable), Castilla-La Mancha, Canarias' ULL share, La Rioja, Ceuta, Melilla.
 
+- **Stage 18:** Google Tag Manager added at the user's request (audience tracking, possibly ads later) — supersedes the earlier "no analytics" rule. GTM (not bare gtag.js) so GA4/ad tags are configured in the GTM dashboard, not in code. Loads **only after explicit Accept** on a banner in `Base.astro` (LSSI/GDPR; audience is largely minors) — choice in `localStorage` key `cookie-consent`; Reject deletes `_ga*` cookies and reloads if GTM was already running. Loader lives in a bundled Astro `<script>` (no inline script), so CSP only gained `https://www.googletagmanager.com` in `script-src` plus Google Analytics hosts in `img-src`/`connect-src`. Consent can be reopened via a "Preferències de galetes" button in the home-page footers (only pages with a footer). Ads would need more: Google requires a certified CMP (TCF v2.2) for personalized ads in the EEA, more CSP hosts, and a privacy/cookie policy page — none built yet.
+
 **Pending manual steps (not app code):**
 - Add `https://paubalearsprep.es` to Supabase Auth → Authentication → URL Configuration → Redirect URLs (flagged since Stage 13, not yet confirmed done).
+- In the GTM dashboard: add a GA4 Configuration (Google tag) with the GA4 Measurement ID, trigger "Initialization – All Pages", then Publish the container — until then GTM loads but sends nothing.
 - Netlify free-tier credits are exhausted — `netlify deploy --prod` is blocked until a payment method is added; use the draft+promote workaround (§9) until then.
 - Update `degrees.json` (notes de tall) and the exam archive annually — Stage 17 covered 13 of 19 regions; País Vasco, Universidad de Murcia, Castilla-La Mancha, Canarias' ULL share, La Rioja, Ceuta, and Melilla still need a follow-up pass once their official sources publish 2026-27 data.
 

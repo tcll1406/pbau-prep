@@ -4,11 +4,13 @@
 # assetsInlineLimit: 0 so every script ships as an external /_astro/*.js file;
 # the only inline <script> tags are type="application/ld+json" JSON-LD blocks,
 # which CSP's script-src never gates since they aren't executable script per
-# the HTML spec), so script-src stays strict with no exceptions.
+# the HTML spec), so script-src allows no inline script. The only third-party
+# origin is Google Tag Manager, loaded post-consent by Base.astro (GA4 hits go
+# to the google-analytics/googletagmanager hosts in img-src/connect-src).
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://duuayhmssvyxghvmrnlj.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; font-src 'self'; connect-src 'self' https://duuayhmssvyxghvmrnlj.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'

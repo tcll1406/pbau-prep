@@ -89,6 +89,13 @@ const googleSiteVerification = import.meta.env.GOOGLE_SITE_VERIFICATION;
 			</nav>
 		</header>
 		<slot />
+		<div id="cookie-banner" role="dialog" aria-label={UI[lang].cookieSettings} hidden>
+			<p>{UI[lang].cookieText}</p>
+			<div class="cookie-actions">
+				<button type="button" id="cookie-reject">{UI[lang].cookieReject}</button>
+				<button type="button" id="cookie-accept">{UI[lang].cookieAccept}</button>
+			</div>
+		</div>
 	</body>
 </html>
 
@@ -264,6 +271,50 @@ const googleSiteVerification = import.meta.env.GOOGLE_SITE_VERIFICATION;
 		border-color: var(--accent);
 	}
 
+	#cookie-banner {
+		position: fixed;
+		left: 1rem;
+		right: 1rem;
+		bottom: 1rem;
+		z-index: 20;
+		max-width: 32rem;
+		margin: 0 auto;
+		padding: 1rem 1.25rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+		font-family: var(--font);
+	}
+
+	#cookie-banner p {
+		margin: 0 0 0.75rem;
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.cookie-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.5rem;
+	}
+
+	.cookie-actions button {
+		padding: 0.5rem 1rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: none;
+		color: var(--text);
+		font-family: var(--font);
+		cursor: pointer;
+	}
+
+	#cookie-accept {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
+
 	@media (max-width: 40rem) {
 		#nav-toggle {
 			display: block;
@@ -316,4 +367,71 @@ const googleSiteVerification = import.meta.env.GOOGLE_SITE_VERIFICATION;
 		await supabase.auth.signOut();
 		window.location.href = '/';
 	});
+</script>
+
+<script>
+	// GTM only loads after explicit consent (LSSI/GDPR). Choice persisted in localStorage.
+	const GTM_ID = 'GTM-52HCRWQH';
+	const KEY = 'cookie-consent';
+	const banner = document.getElementById('cookie-banner')!;
+
+	function getConsent() {
+		try {
+			return localStorage.getItem(KEY);
+		} catch {
+			return null;
+		}
+	}
+
+	function setConsent(value: 'granted' | 'denied') {
+		try {
+			localStorage.setItem(KEY, value);
+		} catch {}
+	}
+
+	function loadGTM() {
+		const w = window as unknown as { dataLayer: unknown[] };
+		w.dataLayer = w.dataLayer || [];
+		w.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+		const s = document.createElement('script');
+		s.async = true;
+		s.src = `https://www.googletagmanager.com/gtm.js?id=${GTM_ID}`;
+		document.head.appendChild(s);
+	}
+
+	function clearAnalyticsCookies() {
+		const host = location.hostname.replace(/^www\./, '');
+		for (const c of document.cookie.split(';')) {
+			const name = c.split('=')[0].trim();
+			if (name.startsWith('_ga') || name.startsWith('_gid')) {
+				for (const domain of ['', `; domain=${host}`, `; domain=.${host}`]) {
+					document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domain}`;
+				}
+			}
+		}
+	}
+
+	const consent = getConsent();
+	if (consent === 'granted') loadGTM();
+	else if (consent === null) banner.hidden = false;
+
+	document.getElementById('cookie-accept')!.addEventListener('click', () => {
+		const wasGranted = getConsent() === 'granted';
+		setConsent('granted');
+		banner.hidden = true;
+		if (!wasGranted) loadGTM();
+	});
+
+	document.getElementById('cookie-reject')!.addEventListener('click', () => {
+		const wasGranted = getConsent() === 'granted';
+		setConsent('denied');
+		banner.hidden = true;
+		clearAnalyticsCookies();
+		// GTM can't be unloaded from a running page — reload so it stops.
+		if (wasGranted) location.reload();
+	});
+
+	document.querySelectorAll('[data-cookie-settings]').forEach((el) =>
+		el.addEventListener('click', () => (banner.hidden = false)),
+	);
 </script>
